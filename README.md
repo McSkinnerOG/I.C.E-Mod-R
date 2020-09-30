@@ -14,15 +14,14 @@ This project exists thanks to Donaut's (github.com/Donaut) original command exte
 ## 🤝 Contributing
 
 Contributions, issues and feature requests are welcome.<br />
-Feel free to check [issues page](https://github.com/kefranabg/readme-md-generator/issues) if you want to contribute.<br />
+Feel free to check [issues page](https://github.com/McSkinnerOG/I.C.E-Mod-R/issues) if you want to contribute.<br />
 [Check the contributing guide](./CONTRIBUTING.md).<br />
 
 ## Author
 
-👤 **Franck Abgrall**
+👤 **Va1idUser**
 
-- Twitter: [@FranckAbgrall](https://twitter.com/FranckAbgrall)
-- Github: [@kefranabg](https://github.com/kefranabg)
+- Github: [@McSkinnerOG](https://github.com/McSkinnerOG)
 
 ## Show your support
 
