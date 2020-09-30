@@ -53,7 +53,7 @@ namespace ICE
                     }
                     break;
 
-                case "/nuke_player":
+                case "/nuke_p":
                     var p2_name4 = server.GetPlayerByName(commands[1]);
                     if (player.m_isAdmin == true && commands[2].ToString() == "true")
                     {

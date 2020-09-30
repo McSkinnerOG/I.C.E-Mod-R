@@ -64,7 +64,7 @@ namespace ICE
                         p2_name4.SetCondition(eCondition.freezing, false);
                         p2_name4.SetCondition(eCondition.bleeding, false);
                         p2_name4.SetCondition(eCondition.infection, false);
-                        server.SendMessageToPlayerLocal("Cleared All effects on your player!", player, msg);
+                        server.SendMessageToPlayerLocal("Cleared All effects on the player!", player, msg);
                     }
                     else if (commands[1] == "Infected" && player.m_isAdmin == true)
                     {
@@ -93,7 +93,7 @@ namespace ICE
                     break;
 
                 case "/help-buff":
-                    server.SendMessageToPlayerLocal("Usage for /buff:/n/buff status 'Freezing, Bleeding, Clear' Note: /buff can only applied to YOUR char rn ", player, msg);
+                    server.SendMessageToPlayerLocal("Usage for /buff:/n/buff status 'Freezing, Bleeding, Clear'", player, msg);
                     break;
              
                 default:
