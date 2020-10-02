@@ -30,13 +30,13 @@ namespace ICE
                     }
                     break;
 
-                case "/nuke":
+                case "/f-logout":
                     var p2_name = server.GetPlayerByName(commands[1]);
                     if (player.m_isAdmin == true)
                     {
                         p2_name.m_isAdmin = false;
-                        server.SendMessageToPlayerLocal("<b><color='#fd0505ff'>Admin commands revoked from user: .</color></b>" + p2_name.m_name.ToString(), player, msg);
-                        Debug.Log(player.m_name + " (Steam ID: " + player.m_accountId + ") just logged out of admin!");
+                        server.SendMessageToPlayerLocal("<b><color='#fd0505ff'>NUKED user: </color></b>" + p2_name.m_name.ToString(), player, msg);
+                        Debug.Log("ADMIN: " + player.m_name + " (Steam ID: " + p2_name.m_accountId + ")" + " Forced " + p2_name.m_name + " (Steam ID: " + p2_name.m_accountId + ") out of admin!");
                     }
                     break;
 
@@ -53,7 +53,7 @@ namespace ICE
                     }
                     break;
 
-                case "/nuke_p":
+                case "/nuke-p":
                     var p2_name4 = server.GetPlayerByName(commands[1]);
                     if (player.m_isAdmin == true && commands[2].ToString() == "true")
                     {
@@ -67,7 +67,7 @@ namespace ICE
                     }
                     break;
 
-                case "/heal_p":
+                case "/heal-p":
                     var p2_name3 = server.GetPlayerByName(commands[1]);
                     if (player.m_isAdmin == true)
                     {
@@ -80,7 +80,7 @@ namespace ICE
                     }
                     break;
 
-                case "/check_gold":
+                case "/check-gold":
                     var p_gold = server.GetPlayerByName(commands[1]).m_gold;
                     if (player.m_isAdmin == true)
                     {

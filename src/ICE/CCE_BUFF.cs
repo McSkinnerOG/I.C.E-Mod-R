@@ -28,23 +28,23 @@ namespace ICE
                         player.SetCondition(eCondition.infection, false);
                         server.SendMessageToPlayerLocal("Cleared All effects on your player!", player, msg);
                     }
-                    else if (commands[1] == "Infected" && player.m_isAdmin == true)
+                    else if (commands[1] == "infect" && player.m_isAdmin == true)
                     {
                         player.SetCondition(eCondition.infection, true);
                     }
-                    else if (commands[1] == "Bleeding" && player.m_isAdmin == true)
+                    else if (commands[1] == "bleed" && player.m_isAdmin == true)
                     {
                         player.SetCondition(eCondition.bleeding, true);
                     }
-                    else if (commands[1] == "Freezing" && player.m_isAdmin == true)
+                    else if (commands[1] == "freeze" && player.m_isAdmin == true)
                     {
                         player.SetCondition(eCondition.freezing, true);
                     }
-                    else if (commands[1] == "Radiation" && player.m_isAdmin == true)
+                    else if (commands[1] == "rads" && player.m_isAdmin == true)
                     {
                         player.SetCondition(eCondition.radiation, true);
                     }
-                    else if (commands[1] == "Pain" && player.m_isAdmin == true)
+                    else if (commands[1] == "pain" && player.m_isAdmin == true)
                     {
                         player.SetCondition(eCondition.pain, true);
                     }
@@ -89,6 +89,10 @@ namespace ICE
                     else if (commands[1] == null)
                     {
                         server.SendMessageToPlayerLocal("Please enter a buff/effect to apply: /nClear, Infected, Bleeding,/nFreezing, Radiation,/nPain", player, msg);
+                    }
+                    else if (commands[2] == null)
+                    {
+                        server.SendMessageToPlayerLocal("Please enter a players name to apple an effect/buff to.", player, msg);
                     }
                     break;
 

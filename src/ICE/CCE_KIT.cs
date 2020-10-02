@@ -10,9 +10,6 @@ namespace ICE
 {
     public class CCE_KIT : MonoBehaviour
     {
-
-       
-
          internal static void HandleChatCommand(string text, ServerPlayer player, NetIncomingMessage msg)
         {
             var server = (LidServer)UnityEngine.Object.FindObjectOfType(typeof(LidServer));
@@ -50,6 +47,7 @@ namespace ICE
                         server.SendMessageToPlayerLocal("BOUGHT DOCTOR KIT!!!", player, msg); // Return success message!!!
                     }
                     break;
+
                 case "/kit-scav1":
                     int IA_1 = player.m_inventory.GetItemAmountByType(254);
                     if (IA_1 <= 349)
@@ -79,6 +77,7 @@ namespace ICE
                         server.SendMessageToPlayerLocal("BOUGHT SCAV KIT!!!", player, msg);
                     }
                     break;
+
                 case "/kit-scav2":
                     int IA_2 = player.m_inventory.GetItemAmountByType(254);
                     if (IA_2 <= 349)
@@ -109,6 +108,7 @@ namespace ICE
                         server.SendMessageToPlayerLocal("BOUGHT SCAV-2 KIT!!!", player, msg);
                     }
                     break;
+
                 case "/kit-scav3":
                     int IA_7 = player.m_inventory.GetItemAmountByType(254);
                     if (IA_7 <= 349)
@@ -139,6 +139,7 @@ namespace ICE
                         server.SendMessageToPlayerLocal("BOUGHT SCAV-3 KIT!!!", player, msg);
                     }
                     break;
+
                 case "/kit-bandit1":
                     int IA_3 = player.m_inventory.GetItemAmountByType(254);
                     if (IA_3 <= 349)
@@ -171,6 +172,7 @@ namespace ICE
                         server.SendMessageToPlayerLocal("BOUGHT BANDIT KIT!!!", player, msg);
                     }
                     break;
+
                 case "/kit-bandit2":
                     int IA_8 = player.m_inventory.GetItemAmountByType(254);
                     if (IA_8 <= 349)
@@ -201,6 +203,7 @@ namespace ICE
                         server.SendMessageToPlayerLocal("BOUGHT BANDIT KIT!!!", player, msg);
                     }
                     break;
+
                 case "/kit-bandit3":
                     int IA_9 = player.m_inventory.GetItemAmountByType(254);
                     if (IA_9 <= 349)
