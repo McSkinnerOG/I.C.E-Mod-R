@@ -78,8 +78,16 @@ namespace ICE
             }
             switch (commands[1])
             {
-                case "kit-guard3":
-                    server.SendMessageToPlayerLocal("<color=purple>Guardian-kit 3 costs 5000gold and recieves: </color> <color=yellow>Guardian-Vest x1, Sneakers x1, </color> <color=white>Giant-Sword x1, Knife x1, Crowbar x1, AK47 x1, </color> <color=brown>Canned-Food x6, Energy-Bar x1, Soda x1, </color> <color=cyan>Water x2,</color> <color=red>Medpack x1.</color>", player, msg);
+                case "prefill":
+                    server.SendMessageToPlayerLocal("prefill2", player, msg);
+                    break;
+                default:
+                    break;
+            }
+            switch (commands[2])
+            {
+                case "prefill2":
+                    server.SendMessageToPlayerLocal("prefill2", player, msg);
                     break;
                 default:
                     break;

@@ -161,8 +161,16 @@ namespace ICE
 			}
 			switch (commands[1])
 			{
-				case "skin":
-					server.SendMessageToPlayerLocal("<color=white>To use a skin please use its</color>/n<color=yellow>'ID' or 'Name'</color> after /skin/n'/skin Chad'", player, msg);
+				case "prefill":
+					server.SendMessageToPlayerLocal("prefill2", player, msg);
+					break;
+				default:
+					break;
+			}
+			switch (commands[2])
+			{
+				case "prefill2":
+					server.SendMessageToPlayerLocal("prefill2", player, msg);
 					break;
 				default:
 					break;
