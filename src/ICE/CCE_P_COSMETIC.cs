@@ -332,7 +332,7 @@ namespace ICE
 						}
 					}
 					break;
-				case "/hat_p":
+				case "/hat-p":
 					var p2_name4 = server.GetPlayerByName(commands[2]);
 					if (player.m_isAdmin == true)
 					{

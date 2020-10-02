@@ -98,7 +98,7 @@ namespace ICE
 						}
 					}
 					break;
-				case "/skin_p":
+				case "/skin-p":
 					if (player.m_isAdmin == true)
 					{
 						var skinResponse = "Changed Skin to <b><color='#ffa500ff'>" + commands[1].ToString() + "</color></b>.";

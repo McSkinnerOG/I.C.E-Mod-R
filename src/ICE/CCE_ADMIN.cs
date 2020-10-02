@@ -16,7 +16,7 @@ namespace ICE
             var server = (LidServer)UnityEngine.Object.FindObjectOfType(typeof(LidServer));
             var remchar = (RemoteCharacter)UnityEngine.Object.FindObjectOfType(typeof(RemoteCharacter));
             var p_pos = player.GetPosition();
-            
+
             string[] commands = text.Split(' ');
             switch (commands[0])
             {
@@ -90,6 +90,11 @@ namespace ICE
                     {
                         server.SendMessageToPlayerLocal("Please login to admin for this command.", player, msg);
                     }
+                    break;
+
+                case "/pos-p":
+                    var p2_pos = server.GetPlayerByName(commands[2]).GetPosition();
+                    server.SendMessageToPlayerLocal(p2_pos.ToString(), player, msg);
                     break;
 
                 case "/?":

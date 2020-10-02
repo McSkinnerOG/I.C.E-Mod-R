@@ -54,7 +54,7 @@ namespace ICE
                     }
                     break;
 
-                case "/buff_p":
+                case "/buff-p":
                     var p2_name4 = server.GetPlayerByName(commands[2]);
                     if (commands[1] == "Clear" || commands[1] == "None" || commands[1] == "Reset" && player.m_isAdmin == true)
                     {
