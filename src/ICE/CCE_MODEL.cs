@@ -10,9 +10,6 @@ namespace ICE
 {
     public class CCE_MODEL : MonoBehaviour
     {
-
-       
-
          internal static void HandleChatCommand(string text, ServerPlayer player, NetIncomingMessage msg)
         {
             var server = (LidServer)UnityEngine.Object.FindObjectOfType(typeof(LidServer));
@@ -261,15 +258,6 @@ namespace ICE
 				default:
 					break;
 			}
-			switch (commands[2])
-			{
-				case "prefill2":
-					server.SendMessageToPlayerLocal("prefill2", player, msg);
-					break;
-				default:
-					break;
-			}
-
 		}
     }
 }

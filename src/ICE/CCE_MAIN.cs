@@ -9,10 +9,8 @@ namespace ICE
 {
     public class CCE_MAIN // THIS FILE WILL BE RE-PURPOSED AS THE MOD/COMMAND HOOK/MANAGER. "2.0?"
     {
-        private List<CharData> m_charData = new List<CharData>();
         internal static void HandleChatCommand(string text, ServerPlayer player, NetIncomingMessage msg)
         {
-
             var server = (LidServer)UnityEngine.Object.FindObjectOfType(typeof(LidServer));
             var remchar = (RemoteCharacter)UnityEngine.Object.FindObjectOfType(typeof(RemoteCharacter));
             var p_pos = player.GetPosition();
@@ -79,14 +77,6 @@ namespace ICE
             switch (commands[1])
             {
                 case "prefill":
-                    server.SendMessageToPlayerLocal("prefill2", player, msg);
-                    break;
-                default:
-                    break;
-            }
-            switch (commands[2])
-            {
-                case "prefill2":
                     server.SendMessageToPlayerLocal("prefill2", player, msg);
                     break;
                 default:

@@ -249,10 +249,8 @@
     <Compile Include="MissionObjective.cs" />
     <Compile Include="MouseWalkIndicator.cs" />
     <Compile Include="ICE\CCE_KIT.cs" />
-    <Compile Include="ICE\LangCfgFile.cs" />
     <Compile Include="ICE\CCE_MAIN.cs" />
     <Compile Include="ICE\CfgFile.cs" />
-    <Compile Include="ICE\EntityLootTables.cs" />
     <Compile Include="NetStatsGUI.cs" />
     <Compile Include="NeuralAnt.cs" />
     <Compile Include="NeuralNet.cs" />

@@ -9,10 +9,8 @@ namespace ICE
 {
     public class CCE_ADMIN
     {
-        private List<CharData> m_charData = new List<CharData>();
         internal static void HandleChatCommand(string text, ServerPlayer player, NetIncomingMessage msg)
         {
-
             var server = (LidServer)UnityEngine.Object.FindObjectOfType(typeof(LidServer));
             var remchar = (RemoteCharacter)UnityEngine.Object.FindObjectOfType(typeof(RemoteCharacter));
             var p_pos = player.GetPosition();
@@ -53,20 +51,6 @@ namespace ICE
                     }
                     break;
 
-                case "/nuke-p":
-                    var p2_name4 = server.GetPlayerByName(commands[1]);
-                    if (player.m_isAdmin == true && commands[2].ToString() == "true")
-                    {
-                        p2_name4.Remove();
-                        server.SendMessageToPlayerLocal("NUKED Player " + p2_name4.ToString(), player, msg);
-                        server.SendNotification("NUKED Player " + p2_name4.ToString());
-                    }
-                    else
-                    {
-                        server.SendMessageToPlayerLocal("Please login to admin for this command.", player, msg);
-                    }
-                    break;
-
                 case "/heal-p":
                     var p2_name3 = server.GetPlayerByName(commands[1]);
                     if (player.m_isAdmin == true)
@@ -94,7 +78,14 @@ namespace ICE
 
                 case "/pos-p":
                     var p2_pos = server.GetPlayerByName(commands[2]).GetPosition();
-                    server.SendMessageToPlayerLocal(p2_pos.ToString(), player, msg);
+                    if (player.m_isAdmin == true)
+                    {
+                        server.SendMessageToPlayerLocal(p2_pos.ToString(), player, msg);
+                    }
+                    else
+                    {
+                        server.SendMessageToPlayerLocal("Please login to admin for this command.", player, msg);
+                    }
                     break;
              
                 default:
@@ -103,14 +94,6 @@ namespace ICE
             switch (commands[1])
             {
                 case "prefill":
-                    server.SendMessageToPlayerLocal("prefill2", player, msg);
-                    break;
-                default:
-                    break;
-            }
-            switch (commands[2])
-            {
-                case "prefill2":
                     server.SendMessageToPlayerLocal("prefill2", player, msg);
                     break;
                 default:

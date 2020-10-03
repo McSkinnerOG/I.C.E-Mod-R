@@ -663,15 +663,6 @@ namespace ICE
 				default:
 					break;
 			}
-			switch (commands[2])
-			{
-				case "prefill2":
-					server.SendMessageToPlayerLocal("prefill2", player, msg);
-					break;
-				default:
-					break;
-			}
-
 		}
     }
 }

@@ -10,9 +10,6 @@ namespace ICE
 {
     public class CCE_P_SKIN : MonoBehaviour
     {
-
-       
-
          internal static void HandleChatCommand(string text, ServerPlayer player, NetIncomingMessage msg)
         {
             var server = (LidServer)UnityEngine.Object.FindObjectOfType(typeof(LidServer));
@@ -191,7 +188,6 @@ namespace ICE
                 default:
                     break;
             }
-
         }
     }
 }
