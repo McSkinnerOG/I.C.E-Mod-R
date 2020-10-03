@@ -77,7 +77,7 @@ namespace ICE
                     break;
 
                 case "/pos-p":
-                    var p2_pos = server.GetPlayerByName(commands[2]).GetPosition();
+                    var p2_pos = server.GetPlayerByName(commands[1]).GetPosition();
                     if (player.m_isAdmin == true)
                     {
                         server.SendMessageToPlayerLocal(p2_pos.ToString(), player, msg);
