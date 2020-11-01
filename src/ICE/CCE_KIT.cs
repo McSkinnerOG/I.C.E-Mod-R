@@ -14,12 +14,13 @@ namespace ICE
         {
             var server = (LidServer)UnityEngine.Object.FindObjectOfType(typeof(LidServer));
             var p_pos = player.GetPosition();
+            var IA = player.m_inventory.GetItemAmountByType(254);
             string[] commands = text.Split(' ');
 
             switch (commands[0])
             {
                 case "/kit-doc1":
-                    int IA = player.m_inventory.GetItemAmountByType(254); // Start currency Check
+                    // Start currency Check
                     if (IA <= 349) // Value to check against.
                     {
                         server.SendMessageToPlayerLocal("Not Enough Gold!", player, msg); // Return error message if plater des not have enough currency!
@@ -49,15 +50,14 @@ namespace ICE
                     break;
 
                 case "/kit-scav1":
-                    int IA_1 = player.m_inventory.GetItemAmountByType(254);
-                    if (IA_1 <= 349)
+                    if (IA <= 349)
                     {
                         server.SendMessageToPlayerLocal("Not Enough Gold!", player, msg);
                     }
-                    else if (IA_1 >= 350)
+                    else if (IA >= 350)
                     {
                         int num = 350;
-                        num = Math.Min(IA_1, num);
+                        num = Math.Min(IA, num);
                         player.m_inventory.DeclineItemAmountByType(254, num);
                         // Clothing
                         // Weapons
@@ -79,15 +79,14 @@ namespace ICE
                     break;
 
                 case "/kit-scav2":
-                    int IA_2 = player.m_inventory.GetItemAmountByType(254);
-                    if (IA_2 <= 349)
+                    if (IA <= 349)
                     {
                         server.SendMessageToPlayerLocal("Not Enough Gold!", player, msg);
                     }
-                    else if (IA_2 >= 350)
+                    else if (IA >= 350)
                     {
                         int num = 350;
-                        num = Math.Min(IA_2, num);
+                        num = Math.Min(IA, num);
                         player.m_inventory.DeclineItemAmountByType(254, num);
                         // Clothing
                         server.CreateFreeWorldItem(151, 1, p_pos, 100);   // Scrap-Vest
@@ -110,15 +109,14 @@ namespace ICE
                     break;
 
                 case "/kit-scav3":
-                    int IA_7 = player.m_inventory.GetItemAmountByType(254);
-                    if (IA_7 <= 349)
+                    if (IA <= 349)
                     {
                         server.SendMessageToPlayerLocal("Not Enough Gold!", player, msg);
                     }
-                    else if (IA_7 >= 350)
+                    else if (IA >= 350)
                     {
                         int num = 350;
-                        num = Math.Min(IA_7, num);
+                        num = Math.Min(IA, num);
                         player.m_inventory.DeclineItemAmountByType(254, num);
                         // Clothing
                         server.CreateFreeWorldItem(151, 1, p_pos, 100);   // Scrap-Vest
@@ -141,15 +139,14 @@ namespace ICE
                     break;
 
                 case "/kit-bandit1":
-                    int IA_3 = player.m_inventory.GetItemAmountByType(254);
-                    if (IA_3 <= 349)
+                    if (IA <= 349)
                     {
                         server.SendMessageToPlayerLocal("Not Enough Gold!", player, msg);
                     }
-                    else if (IA_3 >= 350)
+                    else if (IA >= 350)
                     {
                         int num = 350;
-                        num = Math.Min(IA_3, num);
+                        num = Math.Min(IA, num);
                         player.m_inventory.DeclineItemAmountByType(254, num);
                         // Clothing
                         server.CreateFreeWorldItem(152, 1, p_pos, 100);   // Metal-Vest
@@ -174,15 +171,14 @@ namespace ICE
                     break;
 
                 case "/kit-bandit2":
-                    int IA_8 = player.m_inventory.GetItemAmountByType(254);
-                    if (IA_8 <= 349)
+                    if (IA <= 349)
                     {
                         server.SendMessageToPlayerLocal("Not Enough Gold!", player, msg);
                     }
-                    else if (IA_8 >= 350)
+                    else if (IA >= 350)
                     {
                         int num = 350;
-                        num = Math.Min(IA_8, num);
+                        num = Math.Min(IA, num);
                         player.m_inventory.DeclineItemAmountByType(254, num);
                         // Clothing
                         server.CreateFreeWorldItem(170, 1, p_pos, 100);   // Shoes
@@ -205,15 +201,14 @@ namespace ICE
                     break;
 
                 case "/kit-bandit3":
-                    int IA_9 = player.m_inventory.GetItemAmountByType(254);
-                    if (IA_9 <= 349)
+                    if (IA <= 349)
                     {
                         server.SendMessageToPlayerLocal("Not Enough Gold!", player, msg);
                     }
-                    else if (IA_9 >= 350)
+                    else if (IA >= 350)
                     {
                         int num = 350;
-                        num = Math.Min(IA_9, num);
+                        num = Math.Min(IA, num);
                         player.m_inventory.DeclineItemAmountByType(254, num);
                         // Clothing
                         server.CreateFreeWorldItem(152, 1, p_pos, 100);   // Metal-Vest
@@ -235,15 +230,14 @@ namespace ICE
                     }
                     break;
                 case "/kit-guard1":
-                    int IA_4 = player.m_inventory.GetItemAmountByType(254);
-                    if (IA_4 <= 499)
+                    if (IA <= 499)
                     {
                         server.SendMessageToPlayerLocal("Not Enough Gold!", player, msg);
                     }
-                    else if (IA_4 >= 500)
+                    else if (IA >= 500)
                     {
                         int num = 500;
-                        num = Math.Min(IA_4, num);
+                        num = Math.Min(IA, num);
                         player.m_inventory.DeclineItemAmountByType(254, num);
                         // Clothing
                         server.CreateFreeWorldItem(154, 1, p_pos, 100);   // Guardian-Vest
@@ -267,15 +261,14 @@ namespace ICE
                     }
                     break;
                 case "/kit-guard2":
-                    int IA_5 = player.m_inventory.GetItemAmountByType(254);
-                    if (IA_5 <= 499)
+                    if (IA <= 499)
                     {
                         server.SendMessageToPlayerLocal("Not Enough Gold!", player, msg);
                     }
-                    else if (IA_5 >= 500)
+                    else if (IA >= 500)
                     {
                         int num = 500;
-                        num = Math.Min(IA_5, num);
+                        num = Math.Min(IA, num);
                         player.m_inventory.DeclineItemAmountByType(254, num);
                         // Clothing
                         server.CreateFreeWorldItem(154, 1, p_pos, 100);   // Guardian-Vest
@@ -299,15 +292,14 @@ namespace ICE
                     }
                     break;
                 case "/kit-guard3":
-                    int IA_6 = player.m_inventory.GetItemAmountByType(254);
-                    if (IA_6 <= 499)
+                    if (IA <= 499)
                     {
                         server.SendMessageToPlayerLocal("Not Enough Gold!", player, msg);
                     }
-                    else if (IA_6 >= 500)
+                    else if (IA >= 500)
                     {
                         int num = 500;
-                        num = Math.Min(IA_6, num);
+                        num = Math.Min(IA, num);
                         player.m_inventory.DeclineItemAmountByType(254, num);
                         // Clothing
                         server.CreateFreeWorldItem(154, 1, p_pos, 100);   // Guardian-Vest

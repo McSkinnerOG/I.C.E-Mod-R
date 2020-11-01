@@ -36,6 +36,8 @@ public class LidServer : LidgrenPeer
 	private float m_nextPlayerDbWriteTime;
 
 	private float m_nextServerListUpdate = 5f;
+	private float m_nextServerBroadcastTime = 5f;
+	private float m_nextServerBroadcastMsg = 1;
 
 	private float m_nextItemUpdate = 5f;
 
@@ -51,7 +53,7 @@ public class LidServer : LidgrenPeer
 
 	private bool m_inited;
 
-	private ServerPlayer[] m_players = new ServerPlayer[50];
+	public ServerPlayer[] m_players = new ServerPlayer[50];
 
 	private ServerNpc[] m_npcs;
 
@@ -223,6 +225,34 @@ public class LidServer : LidgrenPeer
 				StartCoroutine(WebRequest.UpdateServer(m_server.Configuration.Port, m_serverName, m_server.ConnectionsCount));
 			}
 			m_nextServerListUpdate = Time.time + 60.34f;
+		}
+		if (Time.time > m_nextServerBroadcastTime)
+		{
+			var msg1 = BroadcastCfgFile.GetVar("message1", "message 1");
+			var msg2 = BroadcastCfgFile.GetVar("message2", "message 2");
+			var msg3 = BroadcastCfgFile.GetVar("message3", "message 3");
+			if (m_nextServerBroadcastMsg == 0)
+			{
+                m_nextServerBroadcastMsg++;
+			}
+			if (m_nextServerBroadcastMsg == 1)
+			{
+				SendNotification(BroadcastCfgFile.GetVar("message1", "message 1"));
+			}
+			if (m_nextServerBroadcastMsg == 2)
+			{
+				SendNotification(BroadcastCfgFile.GetVar("message2", "message 2"));
+			}
+			if (m_nextServerBroadcastMsg == 3)
+			{
+				SendNotification(BroadcastCfgFile.GetVar("message3", "message 3"));
+			}
+			if (m_nextServerBroadcastMsg == 4)
+			{
+				m_nextServerBroadcastMsg = 0;
+			}
+			m_nextServerBroadcastTime = Time.time + 30.34f;
+			m_nextServerBroadcastMsg++;
 		}
 		if (Time.time > m_serverRestartTime)
 		{
@@ -1943,7 +1973,7 @@ public class LidServer : LidgrenPeer
 				DatabaseItem databaseItem3 = m_freeWorldItems[i];
 				float y = databaseItem3.y;
 				Vector3 position2 = a_player.GetPosition();
-				if (!(Mathf.Abs(y - position2.z) < 1.1f))
+				if (!(Mathf.Abs(y - position2.z) < 1.1f)) //pickup radius
 				{
 					continue;
 				}

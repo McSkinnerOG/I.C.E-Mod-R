@@ -1,27 +1,27 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using UnityEngine;
 
-public class CfgFile : ConfigFile
+public class BroadcastCfgFile : ConfigFile
 {
-	private static Hashtable m_cfgVars = new Hashtable();
+	private static Hashtable m_broadcastCfgVars = new Hashtable();
 
-	private static bool m_loadedPluginCfg = false;
+	private static bool m_loadedBroadcastCfg = false;
 
 	private static void LoadConfig()
 	{
-		if (!m_loadedPluginCfg)
+		if (!m_loadedBroadcastCfg)
 		{
-			m_loadedPluginCfg = true;
-			string path = "Plugin_data\\config.ice";
+			m_loadedBroadcastCfg = true;
+			string path = "Plugin_data\\broadcasts.ice";
 			try
 			{
 				if (File.Exists(path))
 				{
 					StreamReader streamReader = File.OpenText(path);
 					string text = streamReader.ReadToEnd();
-					text = text.Replace("\r", string.Empty).Replace(" ", string.Empty);
+					text = text.Replace("\r", string.Empty).Replace("　", string.Empty);
 					string[] array = text.Split('\n');
 					for (int i = 0; i < array.Length; i++)
 					{
@@ -30,7 +30,7 @@ public class CfgFile : ConfigFile
 							string[] array2 = array[i].Split('=');
 							if (array2 != null && array2.Length == 2 && 0 < array2[0].Length && 0 < array2[1].Length)
 							{
-								m_cfgVars.Add(array2[0], array2[1]);
+								m_broadcastCfgVars.Add(array2[0], array2[1]);
 							}
 						}
 					}
@@ -38,7 +38,7 @@ public class CfgFile : ConfigFile
 			}
 			catch (Exception arg)
 			{
-				Debug.Log("ConfigFile.cs: caught exception " + arg);
+				Debug.Log("CfgFile.cs: caught exception " + arg);
 			}
 		}
 	}
@@ -46,6 +46,6 @@ public class CfgFile : ConfigFile
 	public static string GetVar(string a_key, string a_emptyReturn = "")
 	{
 		LoadConfig();
-		return (!m_cfgVars.Contains(a_key)) ? a_emptyReturn : ((string)m_cfgVars[a_key]);
+		return (!m_broadcastCfgVars.Contains(a_key)) ? a_emptyReturn : ((string)m_broadcastCfgVars[a_key]);
 	}
 }

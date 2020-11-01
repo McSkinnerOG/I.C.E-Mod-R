@@ -1,6 +1,7 @@
 ﻿using Lidgren.Network;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,7 @@ namespace ICE
                 case "/skin":
 					if (player.m_isAdmin == true)
 					{
+						
 						var skinResponse = "Changed Skin to <b><color='#ffa500ff'>" + commands[1].ToString() + "</color></b>.";
 						var skin = player.m_skinIndex;
 						if (commands[1] == "0" || commands[1] == "Player" || commands[1] == "Default")

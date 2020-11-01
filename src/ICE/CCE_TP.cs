@@ -30,6 +30,18 @@ namespace ICE
 					else if (re_name == null)
 						server.SendMessageToPlayerLocal("Please Enter the name of the player/nto teleport to after '/tp-p'/n EG: '/tp=p UserName'", player, msg);
 					break;
+
+
+				case "/tp-all":
+					if (player.m_isAdmin == true)
+					{
+						for (int i = 0; i < server.m_players.Length; i++)
+						{
+							server.m_players[i].SetPosition(p_pos);
+						}
+					}
+					break;
+
 				case "/tp":
 					if ("HomeTown" == commands[1] && player.m_isAdmin == true)
 					{
