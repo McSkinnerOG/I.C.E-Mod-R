@@ -1,0 +1,15 @@
+D:\Dev\GitHub\I.C.E-Mod\src\bin\Release\Assembly-CSharp.dll
+D:\Dev\GitHub\I.C.E-Mod\src\bin\Release\Assembly-CSharp.pdb
+D:\Dev\GitHub\I.C.E-Mod\src\bin\Release\Assembly-CSharp-firstpass.dll
+D:\Dev\GitHub\I.C.E-Mod\src\bin\Release\Lidgren.Network.dll
+D:\Dev\GitHub\I.C.E-Mod\src\bin\Release\Mono.Data.SqliteClient.dll
+D:\Dev\GitHub\I.C.E-Mod\src\bin\Release\System.Data.dll
+D:\Dev\GitHub\I.C.E-Mod\src\bin\Release\System.dll
+D:\Dev\GitHub\I.C.E-Mod\src\bin\Release\UnityEngine.dll
+D:\Dev\GitHub\I.C.E-Mod\src\bin\Release\UnityEngine.UI.dll
+D:\Dev\GitHub\I.C.E-Mod\src\bin\Release\Mono.Security.dll
+D:\Dev\GitHub\I.C.E-Mod\src\obj\Release\Assembly-CSharp.csprojAssemblyReference.cache
+D:\Dev\GitHub\I.C.E-Mod\src\obj\Release\Assembly-CSharp.csproj.CoreCompileInputs.cache
+D:\Dev\GitHub\I.C.E-Mod\src\obj\Release\Assembly-CSharp.csproj.CopyComplete
+D:\Dev\GitHub\I.C.E-Mod\src\obj\Release\Assembly-CSharp.dll
+D:\Dev\GitHub\I.C.E-Mod\src\obj\Release\Assembly-CSharp.pdb

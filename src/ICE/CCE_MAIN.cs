@@ -9,6 +9,17 @@ namespace ICE
 {
     public class CCE_MAIN // THIS FILE WILL BE RE-PURPOSED AS THE MOD/COMMAND HOOK/MANAGER. "2.0?"
     {
+        private float m_nextServerListUpdate = 5f;
+        private float m_nextServerBroadcastTime = 5f;
+        private float m_nextServerBroadcastMsg = 1;
+        
+        private static void Update()
+        {
+            var server = (LidServer)UnityEngine.Object.FindObjectOfType(typeof(LidServer));
+            
+
+        }
+        
         internal static void HandleChatCommand(string text, ServerPlayer player, NetIncomingMessage msg)
         {
             var server = (LidServer)UnityEngine.Object.FindObjectOfType(typeof(LidServer));

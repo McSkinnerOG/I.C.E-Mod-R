@@ -35,9 +35,9 @@ public class LidServer : LidgrenPeer
 
 	private float m_nextPlayerDbWriteTime;
 
-	private float m_nextServerListUpdate = 5f;
-	private float m_nextServerBroadcastTime = 5f;
-	private float m_nextServerBroadcastMsg = 1;
+	public float m_nextServerListUpdate = 5f;
+	public float m_nextServerBroadcastTime = 5f;
+	public float m_nextServerBroadcastMsg = 1;
 
 	private float m_nextItemUpdate = 5f;
 
@@ -55,7 +55,7 @@ public class LidServer : LidgrenPeer
 
 	public ServerPlayer[] m_players = new ServerPlayer[50];
 
-	private ServerNpc[] m_npcs;
+	public ServerNpc[] m_npcs;
 
 	private ServerVehicle[] m_vehicles;
 
@@ -67,7 +67,7 @@ public class LidServer : LidgrenPeer
 
 	private SpecialArea[] m_specialAreas;
 
-	private RepairingNpc[] m_repairNpcs;
+	public RepairingNpc[] m_repairNpcs;
 
     private ServerTutorial m_tutorial;
 
@@ -233,7 +233,7 @@ public class LidServer : LidgrenPeer
 			var msg3 = BroadcastCfgFile.GetVar("message3", "message 3");
 			if (m_nextServerBroadcastMsg == 0)
 			{
-                m_nextServerBroadcastMsg++;
+				m_nextServerBroadcastMsg++;
 			}
 			if (m_nextServerBroadcastMsg == 1)
 			{
@@ -251,7 +251,7 @@ public class LidServer : LidgrenPeer
 			{
 				m_nextServerBroadcastMsg = 0;
 			}
-			m_nextServerBroadcastTime = Time.time + 30.34f;
+			m_nextServerBroadcastTime = Time.time + 120.34f;
 			m_nextServerBroadcastMsg++;
 		}
 		if (Time.time > m_serverRestartTime)
