@@ -17,6 +17,8 @@ public class Init : MonoBehaviour
 		{
 			if (Environment.CommandLine.Contains("-batchmode"))
 			{
+				int width = Screen.width;
+				int height = Screen.height;
 				Screen.showCursor = true;
 				LidServer lidServer = (LidServer)UnityEngine.Object.FindObjectOfType(typeof(LidServer));
 				lidServer.enabled = true;
@@ -35,5 +37,6 @@ public class Init : MonoBehaviour
 
 	private void Start()
 	{
+
 	}
 }

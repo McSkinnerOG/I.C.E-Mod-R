@@ -210,6 +210,10 @@
     <Compile Include="ICE\CCE_P_COSMETIC.cs" />
     <Compile Include="ICE\CCE_BUFF.cs" />
     <Compile Include="ICE\CCE_TP.cs" />
+    <Compile Include="ICE\ConsoleInput.cs" />
+    <Compile Include="ICE\ConsoleSystem.cs" />
+    <Compile Include="ICE\ConsoleWindow.cs" />
+    <Compile Include="ICE\ServerConsole.cs" />
     <Compile Include="ImageEffects.cs" />
     <Compile Include="Init.cs" />
     <Compile Include="InitGameScene.cs" />

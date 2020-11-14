@@ -28,17 +28,17 @@ namespace ICE
             string[] commands = text.Split(' ');
             switch (commands[0])
             {
-                case "/id":
+                case "/id": // RETURN PLAYERS ID
                     var p_id = server.GetPlayerByName(commands[1]).m_pid;
                     server.SendMessageToPlayerLocal(p_id.ToString(), player, msg);
                     break;
 
-                case "/oid":
+                case "/oid": // RETURN PLAYERS ONLINE-ID
                     var p_oid = server.GetPlayerByName(commands[1]).m_onlineId;
                     server.SendMessageToPlayerLocal(p_oid.ToString(), player, msg);
                     break;
 
-                case "/admin?":
+                case "/admin?": // CHECK A PLAYERS ADMIN STATUS
                     var p_admin = server.GetPlayerByName(commands[1]).m_isAdmin;
                     var msg_admin_y = " !!!YES!!! This player is an admin!";
                     var msg_admin_n = "This player is NOT admin!";
@@ -52,11 +52,11 @@ namespace ICE
                     }
                     break;
 
-                case "/pos":
+                case "/pos": // RETURNS PLAYERS CURRENT POSITION
                     server.SendMessageToPlayerLocal(p_pos.ToString(), player, msg);
                     break;
 
-                case "/online":
+                case "/online": // RETURNS CURRENT AMOUNT OF PLAYERS IN ONLINE STATE
                     server.SendMessageToPlayerLocal(LNG.Get("CMD_ONLINE_PLAYERS").Replace("{p_online}", server.GetPlayerCount().ToString()), player, msg);
                     break;
 
@@ -64,7 +64,7 @@ namespace ICE
                     server.SendMessageToPlayerLocal("I.C.E is a project to help expand the Immune-Dedicated software capabilities. For more info please use /commands and /help commandname.",
                         player, msg);
                     break;
-                case "/shout":
+                case "/shout": // SEND MESSAGE TO ALL PLAYERS VIA BROADCAST
                     server.SendNotification(text.Remove(0,6)); 
                     break;
                 case "/commands":

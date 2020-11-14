@@ -9,13 +9,13 @@ using UnityEngine.UI;
 
 public class LidServer : LidgrenPeer
 {
-	private const float c_updateXradius = 22f;
+	public const float c_updateXradius = 22f;
 
-	private const float c_updateZradius = 19f;
+	public const float c_updateZradius = 19f;
 
-	private const float c_playerPickupRadius = 17.5f;
+	public const float c_playerPickupRadius = 17.5f;
 
-	private const float c_playerVehicleRadius = 17.5f;
+	public const float c_playerVehicleRadius = 17.5f;
 
 	public GameObject m_controlledCharPrefab;
 
@@ -27,31 +27,31 @@ public class LidServer : LidgrenPeer
 
 	public bool m_shutdownIfEmpty;
 
-	private int m_restartMinutes = 5;
+	public int m_restartMinutes = 5;
 
-	private int m_maxPartyId = 1;
+	public int m_maxPartyId = 1;
 
-	private float m_dayNightCycleSpeed = 0.001f;
+	public float m_dayNightCycleSpeed = 0.001f;
 
-	private float m_nextPlayerDbWriteTime;
+	public float m_nextPlayerDbWriteTime;
 
 	public float m_nextServerListUpdate = 5f;
 	public float m_nextServerBroadcastTime = 5f;
 	public float m_nextServerBroadcastMsg = 1;
 
-	private float m_nextItemUpdate = 5f;
+	public float m_nextItemUpdate = 5f;
 
-	private NetServer m_server;
+	public NetServer m_server;
 
 	private SQLThreadManager m_sql;
 
 	private BuildingManager m_buildingMan;
 
-	private MissionManager m_missionMan;
+	public MissionManager m_missionMan;
 
-	private string m_serverName = string.Empty;
+	public string m_serverName = string.Empty;
 
-	private bool m_inited;
+	public bool m_inited;
 
 	public ServerPlayer[] m_players = new ServerPlayer[50];
 
@@ -59,30 +59,30 @@ public class LidServer : LidgrenPeer
 
 	private ServerVehicle[] m_vehicles;
 
-	private ShopContainer[] m_shopContainers;
+	public ShopContainer[] m_shopContainers;
 
-	private ServerBuilding[] m_staticBuildings;
+	public ServerBuilding[] m_staticBuildings;
 
-	private SpawnPos[] m_spawnPoints;
+	public SpawnPos[] m_spawnPoints;
 
-	private SpecialArea[] m_specialAreas;
+	public SpecialArea[] m_specialAreas;
 
 	public RepairingNpc[] m_repairNpcs;
 
-    private ServerTutorial m_tutorial;
+	public ServerTutorial m_tutorial;
 
-	private List<DatabaseItem> m_freeWorldItems = new List<DatabaseItem>();
+	public List<DatabaseItem> m_freeWorldItems = new List<DatabaseItem>();
 
-	private Hashtable m_freeWorldContainers = new Hashtable();
+	public Hashtable m_freeWorldContainers = new Hashtable();
 
-	private Hashtable m_partys = new Hashtable();
+	public Hashtable m_partys = new Hashtable();
 
-	private float m_dayNightCycle;
+	public float m_dayNightCycle;
 
-	private Transform[] m_playerEntities = new Transform[36];
+	public Transform[] m_playerEntities = new Transform[36];
 
-	private List<CharData> m_charData = new List<CharData>();
-	private LidClient m_client;
+	public List<CharData> m_charData = new List<CharData>();
+	public LidClient m_client;
 	private void OnEnable()
 	{
 		Global.isServer = true;
@@ -93,7 +93,7 @@ public class LidServer : LidgrenPeer
 		Application.LoadLevel(1);
 	}
 
-	private void StartServer()
+	public void StartServer()
 	{
 		if (m_server == null)
 		{
@@ -118,7 +118,7 @@ public class LidServer : LidgrenPeer
 		}
 	}
 
-	private void Init()
+	public void Init()
 	{
 		m_npcs = (ServerNpc[])UnityEngine.Object.FindObjectsOfType(typeof(ServerNpc));
 		m_shopContainers = (ShopContainer[])UnityEngine.Object.FindObjectsOfType(typeof(ShopContainer));
