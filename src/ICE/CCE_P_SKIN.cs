@@ -30,28 +30,24 @@ namespace ICE
 							player.m_skinIndex = 0;
 							player.m_updateInfoFlag = true;
 							server.SendMessageToPlayerLocal(skinResponse, player, msg);
-							Debug.Log(player.m_name + " Changed Skin to: " + commands[1].ToString() + "!");
 						}
 						else if (commands[1] == "Chad" || commands[1] == "chad" || commands[1] == "CHAD" || commands[1] == "Yakuza" || commands[1] == "yakuza" || commands[1] == "YAKUZA")
 						{
 							player.m_skinIndex = 1;
 							player.m_updateInfoFlag = true;
 							server.SendMessageToPlayerLocal(skinResponse, player, msg);
-							Debug.Log(player.m_name + " Changed Skin to: " + commands[1].ToString() + "!");
 						}
 						else if (commands[1] == "Chuck" || commands[1] == "Chad".ToUpper() || commands[1] == "Chad".ToLower() || commands[1] == "LumberJack" || commands[1] == "LumberJack".ToUpper() || commands[1] == "LumberJack".ToLower())
 						{
 							player.m_skinIndex = 2;
 							player.m_updateInfoFlag = true;
 							server.SendMessageToPlayerLocal(skinResponse, player, msg);
-							Debug.Log(player.m_name + " Changed Skin to: " + commands[1].ToString() + "!");
 						}
 						else if (commands[1] == "Rollins" || commands[1] == "Business" || commands[1] == "Rollins".ToUpper() || commands[1] == "Business".ToUpper() || commands[1] == "Rollins".ToLower() || commands[1] == "Business".ToLower())
 						{
 							player.m_skinIndex = 3;
 							player.m_updateInfoFlag = true;
 							server.SendMessageToPlayerLocal(skinResponse, player, msg);
-							Debug.Log(player.m_name + " Changed Skin to: " + commands[1].ToString() + "!");
 						}
 						else if (commands[1] == "Vince" || commands[1] == "Latino" || commands[1] == "Vince".ToLower() || commands[1] == "Latino".ToLower() || commands[1] == "Vince".ToUpper() || commands[1] == "Latino".ToUpper())
 						{
@@ -108,28 +104,24 @@ namespace ICE
 							p2_name4.m_skinIndex = 0;
 							p2_name4.m_updateInfoFlag = true;
 							server.SendMessageToPlayerLocal(skinResponse, player, msg);
-							Debug.Log(player.m_name + " Changed Skin to: " + commands[1].ToString() + "!");
 						}
 						else if (commands[1] == "Chad" || commands[1] == "chad" || commands[1] == "CHAD" || commands[1] == "Yakuza" || commands[1] == "yakuza" || commands[1] == "YAKUZA")
 						{
 							p2_name4.m_skinIndex = 1;
 							p2_name4.m_updateInfoFlag = true;
 							server.SendMessageToPlayerLocal(skinResponse, player, msg);
-							Debug.Log(player.m_name + " Changed Skin to: " + commands[1].ToString() + "!");
 						}
 						else if (commands[1] == "Chuck" || commands[1] == "Chad".ToUpper() || commands[1] == "Chad".ToLower() || commands[1] == "LumberJack" || commands[1] == "LumberJack".ToUpper() || commands[1] == "LumberJack".ToLower())
 						{
 							p2_name4.m_skinIndex = 2;
 							p2_name4.m_updateInfoFlag = true;
 							server.SendMessageToPlayerLocal(skinResponse, player, msg);
-							Debug.Log(player.m_name + " Changed Skin to: " + commands[1].ToString() + "!");
 						}
 						else if (commands[1] == "Rollins" || commands[1] == "Business" || commands[1] == "Rollins".ToUpper() || commands[1] == "Business".ToUpper() || commands[1] == "Rollins".ToLower() || commands[1] == "Business".ToLower())
 						{
 							p2_name4.m_skinIndex = 3;
 							p2_name4.m_updateInfoFlag = true;
 							server.SendMessageToPlayerLocal(skinResponse, player, msg);
-							Debug.Log(player.m_name + " Changed Skin to: " + commands[1].ToString() + "!");
 						}
 						else if (commands[1] == "Vince" || commands[1] == "Latino" || commands[1] == "Vince".ToLower() || commands[1] == "Latino".ToLower() || commands[1] == "Vince".ToUpper() || commands[1] == "Latino".ToUpper())
 						{

@@ -91,18 +91,8 @@ namespace ICE
                         server.SendMessageToPlayerLocal("Please enter a buff/effect to apply: /nClear, Infected, Bleeding,/nFreezing, Radiation,/nPain", player, msg);
                     }
                     break;
-
                 case "/help-buff":
                     server.SendMessageToPlayerLocal("Usage for /buff:/n/buff status 'Freezing, Bleeding, Clear'", player, msg);
-                    break;
-             
-                default:
-                    break;
-            }
-            switch (commands[1])
-            {
-                case "prefill":
-                    server.SendMessageToPlayerLocal("prefill2", player, msg);
                     break;
                 default:
                     break;
