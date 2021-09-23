@@ -1,30 +1,30 @@
+﻿using System;
 using System.Threading;
 using UnityEngine;
 
 public class ThreadTest : MonoBehaviour
 {
-	private object oThreadLock = new object();
-
-	private float m_threadTime;
-
-	private Thread m_thread;
+	public ThreadTest()
+	{
+	}
 
 	private void Start()
 	{
-		m_thread = new Thread(ThreadFunc);
-		m_thread.IsBackground = true;
-		m_thread.Start();
+		this.m_thread = new Thread(new ThreadStart(this.ThreadFunc));
+		this.m_thread.IsBackground = true;
+		this.m_thread.Start();
 	}
 
 	private void ThreadFunc()
 	{
-		while (true)
+		for (;;)
 		{
 			Thread.Sleep(1000);
 			float num = 0f;
-			lock (oThreadLock)
+			object obj = this.oThreadLock;
+			lock (obj)
 			{
-				num = m_threadTime;
+				num = this.m_threadTime;
 			}
 			Debug.Log(num);
 		}
@@ -32,15 +32,22 @@ public class ThreadTest : MonoBehaviour
 
 	private void OnApplicationQuit()
 	{
-		m_thread.Abort();
+		this.m_thread.Abort();
 		Debug.Log("OnApplicationQuit()");
 	}
 
 	private void Update()
 	{
-		lock (oThreadLock)
+		object obj = this.oThreadLock;
+		lock (obj)
 		{
-			m_threadTime += Time.deltaTime;
+			this.m_threadTime += Time.deltaTime;
 		}
 	}
+
+	private object oThreadLock = new object();
+
+	private float m_threadTime;
+
+	private Thread m_thread;
 }

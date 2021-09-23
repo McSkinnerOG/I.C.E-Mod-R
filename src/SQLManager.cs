@@ -1,18 +1,23 @@
+﻿using System;
+
 public static class SQLManager
 {
-	public static ServerPlayer[] m_players = new ServerPlayer[50];
+	// Note: this type is marked as 'beforefieldinit'.
+	static SQLManager()
+	{
+	}
 
 	public static bool SpawnPlayer(ref ServerPlayer a_player, string a_name)
 	{
 		SQLWorker.GetOrCreatePlayer(ref a_player, a_name);
 		if (a_player != null)
 		{
-			for (int i = 0; i < m_players.Length; i++)
+			for (int i = 0; i < SQLManager.m_players.Length; i++)
 			{
-				if (m_players[i] == null)
+				if (SQLManager.m_players[i] == null)
 				{
-					m_players[i] = a_player;
-					m_players[i].m_onlineId = i;
+					SQLManager.m_players[i] = a_player;
+					SQLManager.m_players[i].m_onlineId = i;
 					break;
 				}
 			}
@@ -22,18 +27,20 @@ public static class SQLManager
 
 	public static ServerPlayer GetPlayer(int a_onlineId)
 	{
-		if (a_onlineId < 0 && a_onlineId > m_players.Length)
+		if (a_onlineId < 0 && a_onlineId > SQLManager.m_players.Length)
 		{
 			return null;
 		}
-		return m_players[a_onlineId];
+		return SQLManager.m_players[a_onlineId];
 	}
 
 	public static void DeletePlayer(int a_onlineId)
 	{
-		if (a_onlineId >= 0 && a_onlineId < m_players.Length)
+		if (a_onlineId >= 0 && a_onlineId < SQLManager.m_players.Length)
 		{
-			m_players[a_onlineId] = null;
+			SQLManager.m_players[a_onlineId] = null;
 		}
 	}
+
+	public static ServerPlayer[] m_players = new ServerPlayer[50];
 }

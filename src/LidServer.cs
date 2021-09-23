@@ -1,268 +1,161 @@
-using ICE;
-using Lidgren.Network;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Lidgren.Network;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class LidServer : LidgrenPeer
 {
-	public const float c_updateXradius = 22f;
+	public LidServer()
+	{
+	}
 
-	public const float c_updateZradius = 19f;
-
-	public const float c_playerPickupRadius = 17.5f;
-
-	public const float c_playerVehicleRadius = 17.5f;
-
-	public GameObject m_controlledCharPrefab;
-
-	public float m_updateIntervall = 0.2f;
-
-	public float m_playerDbWriteIntervall = 10.5f;
-
-	public float m_serverRestartTime = 86399f;
-
-	public bool m_shutdownIfEmpty;
-
-	public int m_restartMinutes = 5;
-
-	public int m_maxPartyId = 1;
-
-	public float m_dayNightCycleSpeed = 0.001f;
-
-	public float m_nextPlayerDbWriteTime;
-
-	public float m_nextServerListUpdate = 5f;
-	public float m_nextServerBroadcastTime = 5f;
-	public float m_nextServerBroadcastMsg = 1;
-
-	public float m_nextItemUpdate = 5f;
-
-	public NetServer m_server;
-
-	private SQLThreadManager m_sql;
-
-	private BuildingManager m_buildingMan;
-
-	public MissionManager m_missionMan;
-
-	public string m_serverName = string.Empty;
-
-	public bool m_inited;
-
-	public ServerPlayer[] m_players = new ServerPlayer[50];
-
-	public ServerNpc[] m_npcs;
-
-	private ServerVehicle[] m_vehicles;
-
-	public ShopContainer[] m_shopContainers;
-
-	public ServerBuilding[] m_staticBuildings;
-
-	public SpawnPos[] m_spawnPoints;
-
-	public SpecialArea[] m_specialAreas;
-
-	public RepairingNpc[] m_repairNpcs;
-
-	public ServerTutorial m_tutorial;
-
-	public List<DatabaseItem> m_freeWorldItems = new List<DatabaseItem>();
-
-	public Hashtable m_freeWorldContainers = new Hashtable();
-
-	public Hashtable m_partys = new Hashtable();
-
-	public float m_dayNightCycle;
-
-	public Transform[] m_playerEntities = new Transform[36];
-
-	public List<CharData> m_charData = new List<CharData>();
-	public LidClient m_client;
 	private void OnEnable()
 	{
 		Global.isServer = true;
 		QualitySettings.SetQualityLevel(0);
 		QualitySettings.vSyncCount = 0;
-		m_sql = (SQLThreadManager)UnityEngine.Object.FindObjectOfType(typeof(SQLThreadManager));
-		m_sql.enabled = true;
+		this.m_sql = (SQLThreadManager)UnityEngine.Object.FindObjectOfType(typeof(SQLThreadManager));
+		this.m_sql.enabled = true;
 		Application.LoadLevel(1);
 	}
 
-	public void StartServer()
+	private void StartServer()
 	{
-		if (m_server == null)
+		if (this.m_server == null)
 		{
-			NetPeerConfiguration netPeerConfiguration = new NetPeerConfiguration("immune");
-			netPeerConfiguration.Port = 8844;
-			netPeerConfiguration.MaximumConnections = 50;
-			netPeerConfiguration.ConnectionTimeout = 10f;
-			netPeerConfiguration.PingInterval = 1f;
-			m_server = new NetServer(netPeerConfiguration);
-			m_server.Start();
-			SetPeer(m_server);
-			base.Connected += onConnected;
-			base.Disconnected += onDisconnected;
-			RegisterMessageHandler(MessageIds.Auth, onAuth);
-			RegisterMessageHandler(MessageIds.Input, onInput);
-			RegisterMessageHandler(MessageIds.Craft, onCraft);
-			RegisterMessageHandler(MessageIds.Chat, onChat);
-			RegisterMessageHandler(MessageIds.ChatLocal, onChatLocal);
-			RegisterMessageHandler(MessageIds.SpecialRequest, onSpecialRequest);
-			RegisterMessageHandler(MessageIds.SetLook, onSetLook);
-			RegisterMessageHandler(MessageIds.PartyControl, onPartyControl);
+			this.m_server = new NetServer(new NetPeerConfiguration("immune")
+			{
+				Port = 8844,
+				MaximumConnections = 50,
+				ConnectionTimeout = 10f,
+				PingInterval = 1f
+			});
+			this.m_server.Start();
+			base.SetPeer(this.m_server);
+			base.Connected += this.onConnected;
+			base.Disconnected += this.onDisconnected;
+			base.RegisterMessageHandler(MessageIds.Auth, new Action<NetIncomingMessage>(this.onAuth));
+			base.RegisterMessageHandler(MessageIds.Input, new Action<NetIncomingMessage>(this.onInput));
+			base.RegisterMessageHandler(MessageIds.Craft, new Action<NetIncomingMessage>(this.onCraft));
+			base.RegisterMessageHandler(MessageIds.Chat, new Action<NetIncomingMessage>(this.onChat));
+			base.RegisterMessageHandler(MessageIds.ChatLocal, new Action<NetIncomingMessage>(this.onChatLocal));
+			base.RegisterMessageHandler(MessageIds.SpecialRequest, new Action<NetIncomingMessage>(this.onSpecialRequest));
+			base.RegisterMessageHandler(MessageIds.SetLook, new Action<NetIncomingMessage>(this.onSetLook));
+			base.RegisterMessageHandler(MessageIds.PartyControl, new Action<NetIncomingMessage>(this.onPartyControl));
 		}
 	}
 
-	public void Init()
+	private void Init()
 	{
-		m_npcs = (ServerNpc[])UnityEngine.Object.FindObjectsOfType(typeof(ServerNpc));
-		m_shopContainers = (ShopContainer[])UnityEngine.Object.FindObjectsOfType(typeof(ShopContainer));
-		m_vehicles = (ServerVehicle[])UnityEngine.Object.FindObjectsOfType(typeof(ServerVehicle));
-		m_spawnPoints = (SpawnPos[])UnityEngine.Object.FindObjectsOfType(typeof(SpawnPos));
-		m_specialAreas = (SpecialArea[])UnityEngine.Object.FindObjectsOfType(typeof(SpecialArea));
-		m_tutorial = (ServerTutorial)UnityEngine.Object.FindObjectOfType(typeof(ServerTutorial));
-		m_repairNpcs = (RepairingNpc[])UnityEngine.Object.FindObjectsOfType(typeof(RepairingNpc));
-		m_missionMan = (MissionManager)UnityEngine.Object.FindObjectOfType(typeof(MissionManager));
-		m_buildingMan = (BuildingManager)UnityEngine.Object.FindObjectOfType(typeof(BuildingManager));
+		this.m_npcs = (ServerNpc[])UnityEngine.Object.FindObjectsOfType(typeof(ServerNpc));
+		this.m_shopContainers = (ShopContainer[])UnityEngine.Object.FindObjectsOfType(typeof(ShopContainer));
+		this.m_vehicles = (ServerVehicle[])UnityEngine.Object.FindObjectsOfType(typeof(ServerVehicle));
+		this.m_spawnPoints = (SpawnPos[])UnityEngine.Object.FindObjectsOfType(typeof(SpawnPos));
+		this.m_specialAreas = (SpecialArea[])UnityEngine.Object.FindObjectsOfType(typeof(SpecialArea));
+		this.m_tutorial = (ServerTutorial)UnityEngine.Object.FindObjectOfType(typeof(ServerTutorial));
+		this.m_repairNpcs = (RepairingNpc[])UnityEngine.Object.FindObjectsOfType(typeof(RepairingNpc));
+		this.m_missionMan = (MissionManager)UnityEngine.Object.FindObjectOfType(typeof(MissionManager));
+		this.m_buildingMan = (BuildingManager)UnityEngine.Object.FindObjectOfType(typeof(BuildingManager));
 		Renderer[] array = (Renderer[])UnityEngine.Object.FindObjectsOfType(typeof(Renderer));
-		Renderer[] array2 = array;
-		foreach (Renderer renderer in array2)
+		foreach (Renderer renderer in array)
 		{
 			renderer.enabled = false;
 		}
 		SkinnedMeshRenderer[] array3 = (SkinnedMeshRenderer[])UnityEngine.Object.FindObjectsOfType(typeof(SkinnedMeshRenderer));
-		SkinnedMeshRenderer[] array4 = array3;
-		foreach (Renderer renderer2 in array4)
+		foreach (SkinnedMeshRenderer renderer2 in array3)
 		{
 			renderer2.enabled = false;
 		}
-		m_staticBuildings = (ServerBuilding[])UnityEngine.Object.FindObjectsOfType(typeof(ServerBuilding));
-		StartServer();
-		m_maxPartyId = m_sql.GetMaxPartyId();
-		m_sql.RequestBuildings();
-		if (m_vehicles != null)
+		this.m_staticBuildings = (ServerBuilding[])UnityEngine.Object.FindObjectsOfType(typeof(ServerBuilding));
+		this.StartServer();
+		this.m_maxPartyId = this.m_sql.GetMaxPartyId();
+		this.m_sql.RequestBuildings();
+		if (this.m_vehicles != null)
 		{
-			for (int k = 0; k < m_vehicles.Length; k++)
+			for (int k = 0; k < this.m_vehicles.Length; k++)
 			{
-				m_vehicles[k].m_id = k;
+				this.m_vehicles[k].m_id = k;
 			}
 		}
-		if (!Environment.CommandLine.Contains("-name"))
+		if (Environment.CommandLine.Contains("-name"))
 		{
-			return;
-		}
-		string[] array5 = Environment.CommandLine.Split('-');
-		int num = 0;
-		while (true)
-		{
-			if (num < array5.Length)
+			string[] array5 = Environment.CommandLine.Split(new char[]
 			{
-				if (array5[num].StartsWith("name"))
+				'-'
+			});
+			for (int l = 0; l < array5.Length; l++)
+			{
+				if (array5[l].StartsWith("name"))
 				{
+					this.m_serverName = array5[l].Substring(4);
 					break;
 				}
-				num++;
-				continue;
 			}
-			return;
 		}
-		m_serverName = array5[num].Substring(4);
 	}
 
 	private void OnApplicationQuit()
 	{
 		QualitySettings.SetQualityLevel(5);
-		if (m_server != null)
+		if (this.m_server != null)
 		{
-			if (!string.IsNullOrEmpty(m_serverName))
+			if (string.Empty != this.m_serverName)
 			{
-				StartCoroutine(WebRequest.DeleteServer(m_server.Configuration.Port));
+				base.StartCoroutine(WebRequest.DeleteServer(this.m_server.Configuration.Port));
 			}
-			m_server.Shutdown("Server has shutdown.");
+			this.m_server.Shutdown("Server has shutdown.");
 		}
 	}
 
 	private void Update()
 	{
-		if (Application.loadedLevel != 1)
+		if (Application.loadedLevel == 1)
 		{
-			return;
-		}
-		if (!m_inited)
-		{
-			Init();
-			m_inited = true;
-		}
-		m_dayNightCycle += Time.deltaTime * m_dayNightCycleSpeed;
-		if (m_dayNightCycle > 1f)
-		{
-			m_dayNightCycle -= 1f;
-		}
-		HandleDatabaseAnswers();
-		if (Time.time > m_nextItemUpdate)
-		{
-			UpdateItems();
-			m_nextItemUpdate = Time.time + 1.17f;
-		}
-		UpdatePlayers();
-		if (Time.time > m_nextPlayerDbWriteTime)
-		{
-			if (m_server.ConnectionsCount > 0)
+			if (!this.m_inited)
 			{
-				m_sql.SavePlayers(m_players, m_server.ConnectionsCount);
+				this.Init();
+				this.m_inited = true;
 			}
-			m_nextPlayerDbWriteTime = Time.time + m_playerDbWriteIntervall;
-		}
-		if (Time.time > m_nextServerListUpdate)
-		{
-			if (!string.IsNullOrEmpty(m_serverName))
+			this.m_dayNightCycle += Time.deltaTime * this.m_dayNightCycleSpeed;
+			if (this.m_dayNightCycle > 1f)
 			{
-				StartCoroutine(WebRequest.UpdateServer(m_server.Configuration.Port, m_serverName, m_server.ConnectionsCount));
+				this.m_dayNightCycle -= 1f;
 			}
-			m_nextServerListUpdate = Time.time + 60.34f;
-		}
-		if (Time.time > m_nextServerBroadcastTime)
-		{
-			var msg1 = BroadcastCfgFile.GetVar("message1", "message 1");
-			var msg2 = BroadcastCfgFile.GetVar("message2", "message 2");
-			var msg3 = BroadcastCfgFile.GetVar("message3", "message 3");
-			if (m_nextServerBroadcastMsg == 0)
+			this.HandleDatabaseAnswers();
+			if (Time.time > this.m_nextItemUpdate)
 			{
-				m_nextServerBroadcastMsg++;
+				this.UpdateItems();
+				this.m_nextItemUpdate = Time.time + 1.17f;
 			}
-			if (m_nextServerBroadcastMsg == 1)
+			this.UpdatePlayers();
+			if (Time.time > this.m_nextPlayerDbWriteTime)
 			{
-				SendNotification(BroadcastCfgFile.GetVar("message1", "message 1"));
+				if (this.m_server.ConnectionsCount > 0)
+				{
+					this.m_sql.SavePlayers(this.m_players, this.m_server.ConnectionsCount);
+				}
+				this.m_nextPlayerDbWriteTime = Time.time + this.m_playerDbWriteIntervall;
 			}
-			if (m_nextServerBroadcastMsg == 2)
+			if (Time.time > this.m_nextServerListUpdate)
 			{
-				SendNotification(BroadcastCfgFile.GetVar("message2", "message 2"));
+				if (string.Empty != this.m_serverName)
+				{
+					base.StartCoroutine(WebRequest.UpdateServer(this.m_server.Configuration.Port, this.m_serverName, this.m_server.ConnectionsCount));
+				}
+				this.m_nextServerListUpdate = Time.time + 60.34f;
 			}
-			if (m_nextServerBroadcastMsg == 3)
+			if (Time.time > this.m_serverRestartTime)
 			{
-				SendNotification(BroadcastCfgFile.GetVar("message3", "message 3"));
+				Application.Quit();
+				this.m_serverRestartTime = Time.time + 999f;
 			}
-			if (m_nextServerBroadcastMsg == 4)
+			else if (Time.time > this.m_serverRestartTime - (float)this.m_restartMinutes * 60f)
 			{
-				m_nextServerBroadcastMsg = 0;
+				this.SendNotification(LNG.Get("SERVER_RESTART_X_MINUTES").Replace("{1}", this.m_restartMinutes.ToString()));
+				this.m_restartMinutes--;
 			}
-			m_nextServerBroadcastTime = Time.time + 120.34f;
-			m_nextServerBroadcastMsg++;
-		}
-		if (Time.time > m_serverRestartTime)
-		{
-			Application.Quit();
-			m_serverRestartTime = Time.time + 999f;
-		}
-		else if (Time.time > m_serverRestartTime - (float)m_restartMinutes * 60f)
-		{
-			SendNotification(LNG.Get("SERVER_RESTART_X_MINUTES").Replace("{1}", m_restartMinutes.ToString()));
-			m_restartMinutes--;
 		}
 	}
 
@@ -273,23 +166,20 @@ public class LidServer : LidgrenPeer
 
 	private void onDisconnected(NetIncomingMessage a_msg)
 	{
-		bool flag = m_shutdownIfEmpty && 0 == m_server.ConnectionsCount;
+		bool flag = this.m_shutdownIfEmpty && 0 == this.m_server.ConnectionsCount;
 		if (a_msg != null && a_msg.SenderConnection != null && a_msg.SenderConnection.Tag != null)
 		{
-
-			ServerPlayer player = GetPlayer((int)a_msg.SenderConnection.Tag);
+			ServerPlayer player = this.GetPlayer((int)a_msg.SenderConnection.Tag);
 			if (player != null)
 			{
 				if (Time.time > player.m_cantLogoutTime || flag)
 				{
-					DisconnectPlayer(player);
-
+					this.DisconnectPlayer(player);
 				}
 				else
 				{
 					player.m_disconnectTime = player.m_cantLogoutTime;
 				}
-				
 			}
 		}
 		if (flag)
@@ -300,31 +190,29 @@ public class LidServer : LidgrenPeer
 
 	private void DisconnectPlayer(ServerPlayer a_player)
 	{
-		if (a_player == null)
+		if (a_player != null)
 		{
-			return;
-		}
-		if (a_player.m_partyId != 0 && (!m_partys.Contains(a_player.m_partyId) || 2 > ((List<DatabasePlayer>)m_partys[a_player.m_partyId]).Count))
-		{
-			a_player.m_partyId = 0;
-			a_player.m_partyRank = 0;
-			if (m_partys.Contains(a_player.m_partyId))
+			if (a_player.m_partyId != 0 && (!this.m_partys.Contains(a_player.m_partyId) || 2 > ((List<DatabasePlayer>)this.m_partys[a_player.m_partyId]).Count))
 			{
-				m_partys.Remove(a_player.m_partyId);
+				a_player.m_partyId = 0;
+				a_player.m_partyRank = 0;
+				if (this.m_partys.Contains(a_player.m_partyId))
+				{
+					this.m_partys.Remove(a_player.m_partyId);
+				}
 			}
+			this.m_sql.SavePlayer(a_player, false);
+			ServerVehicle vehicle = a_player.GetVehicle();
+			if (null != vehicle && !a_player.ExitVehicle(false))
+			{
+				vehicle.DestroyCarAndForceExitPassengers();
+			}
+			NetOutgoingMessage netOutgoingMessage = this.m_server.CreateMessage();
+			netOutgoingMessage.Write(MessageIds.RemoveClient);
+			netOutgoingMessage.Write((byte)a_player.m_onlineId);
+			this.m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.ReliableOrdered);
+			this.DeletePlayer(a_player.m_onlineId);
 		}
-		m_sql.SavePlayer(a_player);
-		ServerVehicle vehicle = a_player.GetVehicle();
-		if (null != vehicle && !a_player.ExitVehicle())
-		{
-			vehicle.DestroyCarAndForceExitPassengers();
-		}
-		NetOutgoingMessage netOutgoingMessage = m_server.CreateMessage();
-		netOutgoingMessage.Write(MessageIds.RemoveClient);
-		netOutgoingMessage.Write((byte)a_player.m_onlineId);
-		m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.ReliableOrdered);
-		DeletePlayer(a_player.m_onlineId);
-		
 	}
 
 	private void onAuth(NetIncomingMessage msg)
@@ -334,7 +222,7 @@ public class LidServer : LidgrenPeer
 		ulong num = msg.ReadUInt64();
 		string text = msg.ReadString();
 		eCharType eCharType = (eCharType)msg.ReadByte();
-		if (eCharType != 0 && eCharType != eCharType.ePlayerFemale)
+		if (eCharType != eCharType.ePlayer && eCharType != eCharType.ePlayerFemale)
 		{
 			eCharType = eCharType.ePlayer;
 		}
@@ -342,12 +230,12 @@ public class LidServer : LidgrenPeer
 		{
 			msg.SenderConnection.Disconnect("Version conflict! Client version: " + text + " Server version: 1.0.1");
 		}
-		else if (0 < num && a == Util.Md5(num + "Version_0_4_8_B"))
+		else if (0UL < num && a == Util.Md5(num + "Version_0_4_8_B"))
 		{
 			bool flag = false;
-			for (int i = 0; i < m_players.Length; i++)
+			for (int i = 0; i < this.m_players.Length; i++)
 			{
-				if (m_players[i] != null && num == m_players[i].m_accountId)
+				if (this.m_players[i] != null && num == this.m_players[i].m_accountId)
 				{
 					flag = true;
 					break;
@@ -356,25 +244,29 @@ public class LidServer : LidgrenPeer
 			if (flag)
 			{
 				msg.SenderConnection.Disconnect("Auth Problem: Error 2");
-				return;
 			}
-			bool flag2 = false;
-			for (int j = 0; j < m_players.Length; j++)
+			else
 			{
-				if (m_players[j] == null)
+				bool flag2 = false;
+				for (int j = 0; j < this.m_players.Length; j++)
 				{
-					m_players[j] = new ServerPlayer(a_name, num, j, eCharType, msg.SenderConnection, m_sql, this, m_buildingMan, m_missionMan);
-					flag2 = true;
-					break;
+					if (this.m_players[j] == null)
+					{
+						this.m_players[j] = new ServerPlayer(a_name, num, j, eCharType, msg.SenderConnection, this.m_sql, this, this.m_buildingMan, this.m_missionMan);
+						flag2 = true;
+						break;
+					}
+				}
+				if (flag2)
+				{
+					this.m_sql.RequestPlayer(num);
+				}
+				else
+				{
+					Debug.Log("LidServer.cs: ERROR: Couldn't find free array element to place new player on?!");
+					msg.SenderConnection.Disconnect("Server is full.");
 				}
 			}
-			if (flag2)
-			{
-				m_sql.RequestPlayer(num);
-				return;
-			}
-			Debug.Log("LidServer.cs: ERROR: Couldn't find free array element to place new player on?!");
-			msg.SenderConnection.Disconnect("Server is full.");
 		}
 		else
 		{
@@ -384,202 +276,176 @@ public class LidServer : LidgrenPeer
 
 	private void onInput(NetIncomingMessage msg)
 	{
-		ServerPlayer player = GetPlayer((int)msg.SenderConnection.Tag);
-		if (player == null || !player.IsSpawned())
+		ServerPlayer player = this.GetPlayer((int)msg.SenderConnection.Tag);
+		if (player != null && player.IsSpawned())
 		{
-			return;
-		}
-		player.m_cantLogoutTime = Time.time + 0.5f;
-		int num = msg.ReadInt32();
-		int num2 = msg.ReadInt16();
-		float a_buildRotation = (float)(int)msg.ReadByte() / 255f * 360f;
-		Vector3 zero = Vector3.zero;
-		Vector3 zero2 = Vector3.zero;
-		if (msg.LengthBytes > 8)
-		{
-			zero.x = (int)msg.ReadByte();
-			zero.z = (int)msg.ReadByte();
-			zero2.x = (int)msg.ReadByte();
-			zero2.z = (int)msg.ReadByte();
-		}
-		bool a_use = 1 == (num & 1);
-		bool flag = 1 == ((num >> 1) & 1);
-		bool flag2 = 1 == ((num >> 2) & 1);
-		bool a_targetIsPlayer = 1 == ((num >> 3) & 1);
-		bool flag3 = 1 == ((num >> 4) & 1);
-		float num3 = (float)((num >> 8) & 0xFF) * 0.01f - 1f;
-		float num4 = (float)((num >> 16) & 0xFF) * 0.01f - 1f;
-		if (Mathf.Abs(num3) < 0.01f)
-		{
-			num3 = 0f;
-		}
-		if (Mathf.Abs(num4) < 0.01f)
-		{
-			num4 = 0f;
-		}
-		float a_attackRot = -1f;
-		if (!flag2)
-		{
-			if (flag3)
+			player.m_cantLogoutTime = Time.time + 0.5f;
+			int num = msg.ReadInt32();
+			int num2 = (int)msg.ReadInt16();
+			float a_buildRotation = (float)msg.ReadByte() / 255f * 360f;
+			Vector3 zero = Vector3.zero;
+			Vector3 zero2 = Vector3.zero;
+			if (msg.LengthBytes > 8)
 			{
-				a_attackRot = (float)num2 / 255f * 360f;
+				zero.x = (float)msg.ReadByte();
+				zero.z = (float)msg.ReadByte();
+				zero2.x = (float)msg.ReadByte();
+				zero2.z = (float)msg.ReadByte();
 			}
-			num2 = -1;
+			bool a_use = 1 == (num & 1);
+			bool flag = 1 == (num >> 1 & 1);
+			bool flag2 = 1 == (num >> 2 & 1);
+			bool a_targetIsPlayer = 1 == (num >> 3 & 1);
+			bool flag3 = 1 == (num >> 4 & 1);
+			float num3 = (float)(num >> 8 & 255) * 0.01f - 1f;
+			float num4 = (float)(num >> 16 & 255) * 0.01f - 1f;
+			if (Mathf.Abs(num3) < 0.01f)
+			{
+				num3 = 0f;
+			}
+			if (Mathf.Abs(num4) < 0.01f)
+			{
+				num4 = 0f;
+			}
+			float a_attackRot = -1f;
+			if (!flag2)
+			{
+				if (flag3)
+				{
+					a_attackRot = (float)num2 / 255f * 360f;
+				}
+				num2 = -1;
+			}
+			if ((num3 != 0f || num4 != 0f || flag) && (player.m_freeWorldContainer != null || player.m_persistentContainer != null || null != player.m_shopContainer))
+			{
+				player.ResetContainers();
+			}
+			player.AssignInput(num3, num4, a_use, flag, a_buildRotation);
+			this.HandlePlayerInput(player, a_use, flag, a_targetIsPlayer, num2, a_attackRot, zero, zero2);
 		}
-		if ((num3 != 0f || num4 != 0f || flag) && (player.m_freeWorldContainer != null || player.m_persistentContainer != null || null != player.m_shopContainer))
-		{
-			player.ResetContainers();
-		}
-		player.AssignInput(num3, num4, a_use, flag, a_buildRotation);
-		HandlePlayerInput(player, a_use, flag, a_targetIsPlayer, num2, a_attackRot, zero, zero2);
 	}
 
 	private void onChat(NetIncomingMessage msg)
 	{
-		ServerPlayer player = GetPlayer((int)msg.SenderConnection.Tag);
+		ServerPlayer player = this.GetPlayer((int)msg.SenderConnection.Tag);
 		if (player != null && player.IsSpawned())
 		{
 			string text = msg.ReadString();
-			if (!string.IsNullOrEmpty(text))
+			if (string.Empty != text)
 			{
-				text = ((!text.StartsWith(":#~")) ? (player.m_name + "§ " + text.Replace("<", string.Empty).Replace(">", string.Empty)) : (player.m_name + " just opened a case and received: \n<color=\"red\">" + text.Substring(3) + "</color>"));
+				if (text.StartsWith(":#~"))
+				{
+					text = player.m_name + " just opened a case and received: \n<color=\"red\">" + text.Substring(3) + "</color>";
+				}
+				else
+				{
+					text = player.m_name + "§ " + text.Replace("<", string.Empty).Replace(">", string.Empty);
+				}
 				NetOutgoingMessage netOutgoingMessage = msg.SenderConnection.Peer.CreateMessage();
 				netOutgoingMessage.Write(MessageIds.Chat);
 				netOutgoingMessage.Write(text);
-				m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.Unreliable);
+				this.m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.Unreliable);
 			}
 		}
 	}
-
 	public void SendMessageToPlayerLocal(string text, ServerPlayer player, NetIncomingMessage msg)
-    {
+	{
 		NetOutgoingMessage netOutgoingMessage = msg.SenderConnection.Peer.CreateMessage();
 		netOutgoingMessage.Write(MessageIds.ChatLocal);
 		netOutgoingMessage.Write((byte)player.m_onlineId);
 		netOutgoingMessage.Write(text);
 		m_server.SendMessage(netOutgoingMessage, player.m_connection, NetDeliveryMethod.Unreliable);
 	}
-
-	public void SendMessageToPlayerChat(string text, ServerPlayer player, NetIncomingMessage msg)
-	{
-		NetOutgoingMessage netOutgoingMessage = msg.SenderConnection.Peer.CreateMessage();
-		netOutgoingMessage.Write(MessageIds.Chat);
-		netOutgoingMessage.Write((byte)player.m_onlineId);
-		netOutgoingMessage.Write(text);
-		m_server.SendMessage(netOutgoingMessage, player.m_connection, NetDeliveryMethod.Unreliable);
-	}
-
-
 	private void onChatLocal(NetIncomingMessage msg)
 	{
-		ServerPlayer player = GetPlayer((int)msg.SenderConnection.Tag);
-		if (player == null || !player.IsSpawned())
+		ServerPlayer player = this.GetPlayer((int)msg.SenderConnection.Tag);
+		if (player != null && player.IsSpawned())
 		{
-			return;
-		}
-		string text = msg.ReadString();
-		if (!string.IsNullOrEmpty(text))
-		{
-			if (text.StartsWith("/")) // Attach CCE_MODULES
+			string text = msg.ReadString();
+			if (string.Empty != text)
 			{
-				HandleChatCommand(text, player, msg);
-				CCE_MAIN.HandleChatCommand(text, player, msg);
-				CCE_ADMIN.HandleChatCommand(text, player, msg);
-				CCE_KIT.HandleChatCommand(text, player, msg);
-				CCE_BUFF.HandleChatCommand(text, player, msg);
-				CCE_MODEL.HandleChatCommand(text, player, msg);
-				CCE_P_COSMETIC.HandleChatCommand(text, player, msg);
-				CCE_P_SKIN.HandleChatCommand(text, player, msg);
-				CCE_TP.HandleChatCommand(text, player, msg);
-
-				return;
+				if (text.StartsWith("/"))
+				{
+					this.HandleChatCommand(text, player);
+				}
+				else
+				{
+					NetOutgoingMessage netOutgoingMessage = msg.SenderConnection.Peer.CreateMessage();
+					netOutgoingMessage.Write(MessageIds.ChatLocal);
+					netOutgoingMessage.Write((byte)player.m_onlineId);
+					netOutgoingMessage.Write(text);
+					this.m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.Unreliable);
+				}
 			}
-			NetOutgoingMessage netOutgoingMessage = msg.SenderConnection.Peer.CreateMessage();
-			netOutgoingMessage.Write(MessageIds.Chat);
-			netOutgoingMessage.Write((byte)player.m_onlineId);
-			netOutgoingMessage.Write(text);
-			m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.Unreliable);
-			//m_server.SendMessage(netOutgoingMessage, player.m_connection, NetDeliveryMethod.Unreliable);
 		}
 	}
 
 	private void onSpecialRequest(NetIncomingMessage msg)
 	{
-		ServerPlayer player = GetPlayer((int)msg.SenderConnection.Tag);
+		ServerPlayer player = this.GetPlayer((int)msg.SenderConnection.Tag);
 		eSpecialRequest eSpecialRequest = (eSpecialRequest)msg.ReadByte();
-		if (player == null || !player.IsSpawned())
+		if (player != null && player.IsSpawned())
 		{
-			return;
-		}
-		switch (eSpecialRequest)
-		{
-		case eSpecialRequest.repairItem:
-		{
-			DatabaseItem itemFromPos = player.m_inventory.GetItemFromPos(0f, 0f);
-			int num = 0;
-			while (true)
+			if (eSpecialRequest == eSpecialRequest.repairItem)
 			{
-				if (num < m_repairNpcs.Length)
+				DatabaseItem itemFromPos = player.m_inventory.GetItemFromPos(0f, 0f);
+				for (int i = 0; i < this.m_repairNpcs.Length; i++)
 				{
-					Vector3 position = m_repairNpcs[num].transform.position;
+					Vector3 position = this.m_repairNpcs[i].transform.position;
 					Vector3 position2 = player.GetPosition();
 					if (Mathf.Abs(position.x - position2.x) < 1.4f && Mathf.Abs(position.z - position2.z) < 1.4f && itemFromPos.type != 0 && Items.HasCondition(itemFromPos.type) && itemFromPos.amount < 100)
 					{
+						int num = (int)(1f + Items.GetValue(itemFromPos.type, 100) * 0.01f * (float)(100 - itemFromPos.amount));
+						num = (int)((float)num * this.m_repairNpcs[i].m_priceMultip + 0.5f);
+						if (num <= player.m_inventory.GetItemAmountByType(254))
+						{
+							player.m_inventory.DeclineItemAmountByType(254, num);
+							player.m_inventory.RepairHandItem();
+							player.m_updateContainersFlag = true;
+							this.SendMoneyUpdate(player);
+						}
 						break;
 					}
-					num++;
-					continue;
 				}
-				return;
 			}
-			int num2 = (int)(1f + Items.GetValue(itemFromPos.type, 100) * 0.01f * (float)(100 - itemFromPos.amount));
-			num2 = (int)((float)num2 * m_repairNpcs[num].m_priceMultip + 0.5f);
-			if (num2 <= player.m_inventory.GetItemAmountByType(254))
+			else if (eSpecialRequest == eSpecialRequest.acceptMission)
 			{
-				player.m_inventory.DeclineItemAmountByType(254, num2);
-				player.m_inventory.RepairHandItem();
-				player.m_updateContainersFlag = true;
-				SendMoneyUpdate(player);
+				this.m_missionMan.AcceptMission(player);
 			}
-			break;
-		}
-		case eSpecialRequest.acceptMission:
-			m_missionMan.AcceptMission(player);
-			break;
-		case eSpecialRequest.solveMission:
-			m_missionMan.SolveMission(player);
-			break;
-		case eSpecialRequest.acceptPartyInvite:
-			if (m_partys.Contains(player.m_partyInviteId))
+			else if (eSpecialRequest == eSpecialRequest.solveMission)
 			{
-				List<DatabasePlayer> list = (List<DatabasePlayer>)m_partys[player.m_partyInviteId];
+				this.m_missionMan.SolveMission(player, false);
+			}
+			else if (eSpecialRequest == eSpecialRequest.acceptPartyInvite && this.m_partys.Contains(player.m_partyInviteId))
+			{
+				List<DatabasePlayer> list = (List<DatabasePlayer>)this.m_partys[player.m_partyInviteId];
 				if (5 > list.Count)
 				{
 					player.m_partyId = player.m_partyInviteId;
 					player.m_partyInviteId = 0;
 					player.m_partyRank = 0;
-					m_sql.SavePlayer(player, true);
-					DatabasePlayer item = new DatabasePlayer(player.m_accountId, player.m_name, player.m_pid);
-					item.partyId = player.m_partyInviteId;
-					item.partyRank = player.m_partyRank;
-					list.Add(item);
-					UpdateParty(list);
+					this.m_sql.SavePlayer(player, true);
+					list.Add(new DatabasePlayer(player.m_accountId, player.m_name, player.m_pid, 0f, 0f, 100, 100, 100, 0, 0, 0, 0, 0)
+					{
+						partyId = player.m_partyInviteId,
+						partyRank = player.m_partyRank
+					});
+					this.UpdateParty(list);
 				}
 				else
 				{
-					SendPartyFeedback(player, ePartyFeedback.partyFull, string.Empty);
+					this.SendPartyFeedback(player, ePartyFeedback.partyFull, string.Empty);
 				}
 			}
-			break;
 		}
 	}
 
 	private void onSetLook(NetIncomingMessage msg)
 	{
-		ServerPlayer player = GetPlayer((int)msg.SenderConnection.Tag);
-		int num = msg.ReadByte();
+		ServerPlayer player = this.GetPlayer((int)msg.SenderConnection.Tag);
+		int num = (int)msg.ReadByte();
 		string a = msg.ReadString();
-		int num2 = msg.ReadByte();
+		int num2 = (int)msg.ReadByte();
 		string a2 = msg.ReadString();
 		if (player != null && player.IsSpawned() && a == Util.GetItemDefHash(num, player.m_accountId) && a2 == Util.GetItemDefHash(num2, player.m_accountId))
 		{
@@ -591,104 +457,92 @@ public class LidServer : LidgrenPeer
 
 	private void onPartyControl(NetIncomingMessage msg)
 	{
-		ServerPlayer player = GetPlayer((int)msg.SenderConnection.Tag);
+		ServerPlayer player = this.GetPlayer((int)msg.SenderConnection.Tag);
 		ePartyControl ePartyControl = (ePartyControl)msg.ReadByte();
 		ulong num = msg.ReadUInt64();
 		if (ePartyControl == ePartyControl.invite)
 		{
 			if (player.m_partyId == 0)
 			{
-				player.m_partyId = ++m_maxPartyId;
+				player.m_partyId = ++this.m_maxPartyId;
 				player.m_partyRank = 1;
-				m_sql.SavePlayer(player, true);
+				this.m_sql.SavePlayer(player, true);
 				List<DatabasePlayer> list = new List<DatabasePlayer>(1);
-				DatabasePlayer item = new DatabasePlayer(player.m_accountId, string.Empty);
-				item.pid = player.m_pid;
-				item.name = player.m_name;
-				item.partyId = player.m_partyId;
-				item.partyRank = player.m_partyRank;
-				list.Add(item);
-				m_partys[player.m_partyId] = list;
-				SendPartyUpdate(player, list.ToArray());
+				list.Add(new DatabasePlayer(player.m_accountId, string.Empty, 0, 0f, 0f, 100, 100, 100, 0, 0, 0, 0, 0)
+				{
+					pid = player.m_pid,
+					name = player.m_name,
+					partyId = player.m_partyId,
+					partyRank = player.m_partyRank
+				});
+				this.m_partys[player.m_partyId] = list;
+				this.SendPartyUpdate(player, list.ToArray());
 			}
-			ServerPlayer playerByAid = GetPlayerByAid(num);
+			ServerPlayer playerByAid = this.GetPlayerByAid(num);
 			int partyId = playerByAid.m_partyId;
-			if (playerByAid != null && (partyId == 0 || !m_partys.Contains(partyId) || 2 > ((List<DatabasePlayer>)m_partys[partyId]).Count))
+			if (playerByAid != null && (partyId == 0 || !this.m_partys.Contains(partyId) || 2 > ((List<DatabasePlayer>)this.m_partys[partyId]).Count))
 			{
 				playerByAid.m_partyInviteId = player.m_partyId;
-				SendPartyFeedback(playerByAid, ePartyFeedback.invite, player.m_name);
+				this.SendPartyFeedback(playerByAid, ePartyFeedback.invite, player.m_name);
 			}
 			else
 			{
-				SendPartyFeedback(player, ePartyFeedback.errorAlreadyInParty, playerByAid.m_name);
+				this.SendPartyFeedback(player, ePartyFeedback.errorAlreadyInParty, playerByAid.m_name);
 			}
 		}
-		else
+		else if (player != null && player.IsSpawned() && Time.time > player.m_nextPartyActionTime && player.m_partyId != 0 && this.m_partys.Contains(player.m_partyId) && (player.m_partyRank == 1 || (ePartyControl == ePartyControl.kick && player.m_accountId == num)))
 		{
-			if (player == null || !player.IsSpawned() || !(Time.time > player.m_nextPartyActionTime) || player.m_partyId == 0 || !m_partys.Contains(player.m_partyId) || (player.m_partyRank != 1 && (ePartyControl != ePartyControl.kick || player.m_accountId != num)))
-			{
-				return;
-			}
 			player.m_nextPartyActionTime = Time.time + 0.5f;
-			List<DatabasePlayer> list2 = (List<DatabasePlayer>)m_partys[player.m_partyId];
-			int num2 = 0;
-			while (true)
+			List<DatabasePlayer> list2 = (List<DatabasePlayer>)this.m_partys[player.m_partyId];
+			for (int i = 0; i < list2.Count; i++)
 			{
-				if (num2 < list2.Count)
+				if (num == list2[i].aid)
 				{
-					DatabasePlayer databasePlayer = list2[num2];
-					if (num == databasePlayer.aid)
+					DatabasePlayer databasePlayer = list2[i];
+					ServerPlayer playerByAid2 = this.GetPlayerByAid(databasePlayer.aid);
+					if (ePartyControl == ePartyControl.kick)
 					{
-						break;
+						databasePlayer.partyId = 0;
+						databasePlayer.partyRank = 0;
+						list2.RemoveAt(i);
+						if (playerByAid2 != null)
+						{
+							playerByAid2.m_partyId = 0;
+							playerByAid2.m_partyRank = 0;
+							this.SendPartyUpdate(playerByAid2, null);
+							if (player.m_accountId != num)
+							{
+								this.SendPartyFeedback(playerByAid2, ePartyFeedback.kicked, player.m_name);
+							}
+						}
 					}
-					num2++;
-					continue;
+					else if (ePartyControl == ePartyControl.prodemote)
+					{
+						databasePlayer.partyRank = ((databasePlayer.partyRank != 0) ? 0 : 1);
+						list2[i] = databasePlayer;
+						if (playerByAid2 != null)
+						{
+							playerByAid2.m_partyRank = databasePlayer.partyRank;
+							if (player.m_accountId != num)
+							{
+								this.SendPartyFeedback(playerByAid2, ePartyFeedback.prodemoted, player.m_name);
+							}
+						}
+					}
+					this.m_sql.SavePartyPlayer(databasePlayer);
+					this.UpdateParty(list2);
+					break;
 				}
-				return;
 			}
-			DatabasePlayer databasePlayer2 = list2[num2];
-			ServerPlayer playerByAid2 = GetPlayerByAid(databasePlayer2.aid);
-			switch (ePartyControl)
-			{
-			case ePartyControl.kick:
-				databasePlayer2.partyId = 0;
-				databasePlayer2.partyRank = 0;
-				list2.RemoveAt(num2);
-				if (playerByAid2 != null)
-				{
-					playerByAid2.m_partyId = 0;
-					playerByAid2.m_partyRank = 0;
-					SendPartyUpdate(playerByAid2, null);
-					if (player.m_accountId != num)
-					{
-						SendPartyFeedback(playerByAid2, ePartyFeedback.kicked, player.m_name);
-					}
-				}
-				break;
-			case ePartyControl.prodemote:
-				databasePlayer2.partyRank = ((databasePlayer2.partyRank == 0) ? 1 : 0);
-				list2[num2] = databasePlayer2;
-				if (playerByAid2 != null)
-				{
-					playerByAid2.m_partyRank = databasePlayer2.partyRank;
-					if (player.m_accountId != num)
-					{
-						SendPartyFeedback(playerByAid2, ePartyFeedback.prodemoted, player.m_name);
-					}
-				}
-				break;
-			}
-			m_sql.SavePartyPlayer(databasePlayer2);
-			UpdateParty(list2);
 		}
 	}
 
 	private void onCraft(NetIncomingMessage msg)
 	{
-		ServerPlayer player = GetPlayer((int)msg.SenderConnection.Tag);
+		ServerPlayer player = this.GetPlayer((int)msg.SenderConnection.Tag);
 		if (player != null && player.IsSpawned())
 		{
-			int num = player.m_inventory.CraftItem(msg.ReadByte(), msg.ReadByte());
+			int num = player.m_inventory.CraftItem((int)msg.ReadByte(), (int)msg.ReadByte());
 			player.AddXp((int)((float)num * 1.0001f));
 			player.ResetContainers();
 		}
@@ -696,82 +550,80 @@ public class LidServer : LidgrenPeer
 
 	private void HandleDatabaseAnswers()
 	{
-		DatabaseBuilding[] array = m_sql.PopRequestedBuildings();
+		DatabaseBuilding[] array = this.m_sql.PopRequestedBuildings();
 		if (array != null)
 		{
 			for (int i = 0; i < array.Length; i++)
 			{
-				m_buildingMan.CreateBuilding(array[i].type, array[i].GetPos(), array[i].pid, array[i].rot, array[i].health, false);
+				this.m_buildingMan.CreateBuilding(array[i].type, array[i].GetPos(), array[i].pid, array[i].rot, array[i].health, false);
 			}
 		}
-		DatabasePlayer[] array2 = m_sql.PopRequestedPlayers();
+		DatabasePlayer[] array2 = this.m_sql.PopRequestedPlayers();
 		if (array2 != null)
 		{
 			for (int j = 0; j < array2.Length; j++)
 			{
-				ServerPlayer a_player = SpawnPlayer(array2[j]);
-				if (0 >= array2[j].partyId)
+				ServerPlayer a_player = this.SpawnPlayer(array2[j]);
+				if (0 < array2[j].partyId)
 				{
-					continue;
-				}
-				if (m_partys.Contains(array2[j].partyId))
-				{
-					List<DatabasePlayer> list = (List<DatabasePlayer>)m_partys[array2[j].partyId];
-					if (list != null && 0 < list.Count)
+					if (this.m_partys.Contains(array2[j].partyId))
 					{
-						SendPartyUpdate(a_player, list.ToArray());
+						List<DatabasePlayer> list = (List<DatabasePlayer>)this.m_partys[array2[j].partyId];
+						if (list != null && 0 < list.Count)
+						{
+							this.SendPartyUpdate(a_player, list.ToArray());
+						}
 					}
-				}
-				else
-				{
-					m_sql.RequestParty(array2[j].partyId);
+					else
+					{
+						this.m_sql.RequestParty(array2[j].partyId);
+					}
 				}
 			}
 		}
-		array2 = m_sql.PopRequestedParty();
+		array2 = this.m_sql.PopRequestedParty();
 		if (array2 != null && 0 < array2.Length)
 		{
 			List<DatabasePlayer> list2 = new List<DatabasePlayer>(array2.Length);
 			list2.AddRange(array2);
-			m_partys[array2[0].partyId] = list2;
-			UpdateParty(list2);
+			this.m_partys[array2[0].partyId] = list2;
+			this.UpdateParty(list2);
 		}
-		DatabaseItem[] array3 = m_sql.PopRequestedItems();
-		if (array3 == null)
+		DatabaseItem[] array3 = this.m_sql.PopRequestedItems();
+		if (array3 != null)
 		{
-			return;
-		}
-		for (int k = 0; k < array3.Length; k++)
-		{
-			if (array3[k].cid == 0)
+			for (int k = 0; k < array3.Length; k++)
 			{
-				m_freeWorldItems.Add(array3[k]);
-				continue;
-			}
-			if (SQLThreadManager.IsInventoryContainer(array3[k].cid))
-			{
-				for (int l = 0; l < m_players.Length; l++)
+				if (array3[k].cid == 0)
 				{
-					if (m_players[l] != null && array3[k].cid == SQLThreadManager.PidToCid(m_players[l].m_pid))
+					this.m_freeWorldItems.Add(array3[k]);
+				}
+				else if (this.m_sql.IsInventoryContainer(array3[k].cid))
+				{
+					for (int l = 0; l < this.m_players.Length; l++)
 					{
-						m_players[l].m_inventory.UpdateOrCreateItem(array3[k]);
-						m_players[l].m_updateInfoFlag |= (array3[k].x < 1f);
-						m_players[l].m_updateContainersFlag = true;
-						break;
+						if (this.m_players[l] != null && array3[k].cid == this.m_sql.PidToCid(this.m_players[l].m_pid))
+						{
+							this.m_players[l].m_inventory.UpdateOrCreateItem(array3[k]);
+							this.m_players[l].m_updateInfoFlag |= (array3[k].x < 1f);
+							this.m_players[l].m_updateContainersFlag = true;
+							break;
+						}
 					}
 				}
-				continue;
-			}
-			Lootbox lootbox = m_buildingMan.AddItemToLootContainer(array3[k]);
-			if (!(null != lootbox))
-			{
-				continue;
-			}
-			for (int m = 0; m < m_players.Length; m++)
-			{
-				if (m_players[m] != null && m_players[m].m_persistentContainer == lootbox.m_container)
+				else
 				{
-					m_players[m].m_updateContainersFlag = true;
+					Lootbox lootbox = this.m_buildingMan.AddItemToLootContainer(array3[k]);
+					if (null != lootbox)
+					{
+						for (int m = 0; m < this.m_players.Length; m++)
+						{
+							if (this.m_players[m] != null && this.m_players[m].m_persistentContainer == lootbox.m_container)
+							{
+								this.m_players[m].m_updateContainersFlag = true;
+							}
+						}
+					}
 				}
 			}
 		}
@@ -779,17 +631,15 @@ public class LidServer : LidgrenPeer
 
 	private void UpdateParty(List<DatabasePlayer> a_party)
 	{
-		if (a_party == null || 0 >= a_party.Count)
+		if (a_party != null && 0 < a_party.Count)
 		{
-			return;
-		}
-		DatabasePlayer databasePlayer = a_party[0];
-		int partyId = databasePlayer.partyId;
-		for (int i = 0; i < m_players.Length; i++)
-		{
-			if (m_players[i] != null && m_players[i].IsSpawned() && m_players[i].m_partyId == partyId)
+			int partyId = a_party[0].partyId;
+			for (int i = 0; i < this.m_players.Length; i++)
 			{
-				SendPartyUpdate(m_players[i], a_party.ToArray());
+				if (this.m_players[i] != null && this.m_players[i].IsSpawned() && this.m_players[i].m_partyId == partyId)
+				{
+					this.SendPartyUpdate(this.m_players[i], a_party.ToArray());
+				}
 			}
 		}
 	}
@@ -802,35 +652,31 @@ public class LidServer : LidgrenPeer
 			bool flag = a_use && a_player.HasUseChanged();
 			if (null == a_player.GetVehicle())
 			{
-				if (flag && !TryEnterVehicle(a_player))
+				if (flag && !this.TryEnterVehicle(a_player) && this.PickupItem(a_player, null).type == 0 && !this.OpenShopContainer(a_player) && !this.m_buildingMan.UseBuilding(a_player, a_player.GetPosition() + a_player.GetForward(), false) && !this.m_missionMan.RequestMission(a_player))
 				{
-					DatabaseItem databaseItem = PickupItem(a_player, null);
-					if (databaseItem.type == 0 && !OpenShopContainer(a_player) && !m_buildingMan.UseBuilding(a_player, a_player.GetPosition() + a_player.GetForward()) && !m_missionMan.RequestMission(a_player))
-					{
-						m_missionMan.SolveMission(a_player, true);
-					}
+					this.m_missionMan.SolveMission(a_player, true);
 				}
 				if (a_attack && a_targetOnlineId != -1)
 				{
 					if (a_targetIsPlayer)
 					{
-						ServerPlayer player = GetPlayer(a_targetOnlineId);
+						ServerPlayer player = this.GetPlayer(a_targetOnlineId);
 						victim = ((player == null || !player.IsSpawned()) ? null : player.GetTransform());
 					}
 					else
 					{
-						ServerNpc npc = GetNpc(a_targetOnlineId);
+						ServerNpc npc = this.GetNpc(a_targetOnlineId);
 						victim = ((!(null != npc)) ? null : npc.transform);
 					}
 				}
 			}
 			else if (flag)
 			{
-				a_player.ExitVehicle();
+				a_player.ExitVehicle(false);
 			}
 			if (a_dragPos != a_dropPos)
 			{
-				HandlePlayerDragDrop(a_player, a_dragPos, a_dropPos);
+				this.HandlePlayerDragDrop(a_player, a_dragPos, a_dropPos);
 			}
 		}
 		a_player.SetVictim(victim);
@@ -844,7 +690,7 @@ public class LidServer : LidgrenPeer
 		Vector3 a_dropPos2 = a_dropPos;
 		if ((a_dropPos - new Vector3(252f, 0f, 252f)).sqrMagnitude < 0.1f)
 		{
-			flag = BuySellItem(vector, a_player);
+			flag = this.BuySellItem(vector, a_player);
 		}
 		else
 		{
@@ -875,11 +721,15 @@ public class LidServer : LidgrenPeer
 				{
 					itemContainer2 = itemContainer3;
 				}
-				for (int i = 0; i < m_players.Length; i++)
+				for (int i = 0; i < this.m_players.Length; i++)
 				{
-					if (m_players[i] != null && ((flag4 && m_players[i].m_freeWorldContainer == a_player.m_freeWorldContainer) || (!flag4 && m_players[i].m_persistentContainer == a_player.m_persistentContainer)))
+					if (this.m_players[i] != null)
 					{
-						m_players[i].m_updateContainersFlag = true;
+						bool flag5 = (flag4 && this.m_players[i].m_freeWorldContainer == a_player.m_freeWorldContainer) || (!flag4 && this.m_players[i].m_persistentContainer == a_player.m_persistentContainer);
+						if (flag5)
+						{
+							this.m_players[i].m_updateContainersFlag = true;
+						}
 					}
 				}
 			}
@@ -896,22 +746,22 @@ public class LidServer : LidgrenPeer
 				DatabaseItem item = itemContainer.DragDrop(vector, a_dropPos2, itemContainer2, a_player.GetPosition());
 				if (0 < item.type)
 				{
-					m_freeWorldItems.Add(item);
+					this.m_freeWorldItems.Add(item);
 				}
 				else if (itemContainer2 != null)
 				{
-					SendMoneyUpdate(a_player);
+					this.SendMoneyUpdate(a_player);
 				}
 				flag = true;
 			}
 			if (flag4 && itemContainer3 != null && itemContainer3.m_items.Count < 1)
 			{
-				DeleteFreeWorldItem(itemContainer3.m_position, true);
+				this.DeleteFreeWorldItem(itemContainer3.m_position, true);
 			}
 		}
 		if (flag && (vector.x < 1f || a_dropPos2.x < 1f))
 		{
-			SendPlayerInfo(a_player);
+			this.SendPlayerInfo(a_player);
 		}
 		a_player.m_updateContainersFlag = true;
 	}
@@ -930,20 +780,20 @@ public class LidServer : LidgrenPeer
 					if (0 < itemFromPos.type)
 					{
 						a_player.m_inventory.DeleteItem(a_pos.x, a_pos.z);
-						int num = (int)(Items.GetValue(itemFromPos.type, itemFromPos.amount) * shopContainer.m_sellPriceMuliplier + 0.5f);
-						while (num > 0)
+						int i = (int)(Items.GetValue(itemFromPos.type, itemFromPos.amount) * shopContainer.m_sellPriceMuliplier + 0.5f);
+						while (i > 0)
 						{
-							int a_amount = (num <= 254) ? num : 254;
-							num -= 254;
-							DatabaseItem a_item = new DatabaseItem(254, 0f, 0f, a_amount);
-							if (!a_player.m_inventory.CollectItem(a_item, true))
+							int a_amount = (i <= 254) ? i : 254;
+							i -= 254;
+							DatabaseItem a_item = new DatabaseItem(254, 0f, 0f, a_amount, false, 0, 0);
+							if (!a_player.m_inventory.CollectItem(a_item, true, default(Vector3)))
 							{
-								CreateFreeWorldItem(254, a_amount, a_player.GetPosition());
+								this.CreateFreeWorldItem(254, a_amount, a_player.GetPosition());
 							}
 						}
 						if (shopContainer.m_container.HasFreeSlots())
 						{
-							shopContainer.m_container.CollectItem(itemFromPos, false);
+							shopContainer.m_container.CollectItem(itemFromPos, false, default(Vector3));
 						}
 						flag = true;
 					}
@@ -953,14 +803,14 @@ public class LidServer : LidgrenPeer
 					DatabaseItem itemFromPos2 = shopContainer.m_container.GetItemFromPos(a_pos.x, a_pos.z);
 					if (0 < itemFromPos2.type)
 					{
-						int num2 = (int)(Items.GetValue(itemFromPos2.type, itemFromPos2.amount) * shopContainer.m_buyPriceMuliplier + 0.5f);
-						if (num2 <= a_player.m_inventory.GetItemAmountByType(254))
+						int num = (int)(Items.GetValue(itemFromPos2.type, itemFromPos2.amount) * shopContainer.m_buyPriceMuliplier + 0.5f);
+						if (num <= a_player.m_inventory.GetItemAmountByType(254))
 						{
-							a_player.m_inventory.DeclineItemAmountByType(254, num2);
+							a_player.m_inventory.DeclineItemAmountByType(254, num);
 							shopContainer.m_container.DeleteItem(a_pos.x, a_pos.z);
-							if (!a_player.m_inventory.CollectItem(itemFromPos2, true))
+							if (!a_player.m_inventory.CollectItem(itemFromPos2, true, default(Vector3)))
 							{
-								CreateFreeWorldItem(itemFromPos2.type, itemFromPos2.amount, a_player.GetPosition());
+								this.CreateFreeWorldItem(itemFromPos2.type, itemFromPos2.amount, a_player.GetPosition());
 							}
 							flag = true;
 						}
@@ -970,44 +820,43 @@ public class LidServer : LidgrenPeer
 		}
 		if (flag)
 		{
-			SendMoneyUpdate(a_player);
+			this.SendMoneyUpdate(a_player);
 		}
 		return flag;
 	}
 
 	private void SendPlayerInfo(ServerPlayer a_player)
 	{
-		NetOutgoingMessage netOutgoingMessage = m_server.CreateMessage();
+		NetOutgoingMessage netOutgoingMessage = this.m_server.CreateMessage();
 		netOutgoingMessage.Write(MessageIds.SetPlayerInfo);
 		netOutgoingMessage.Write((byte)a_player.m_onlineId);
-		AddPlayerInfoToMsg(netOutgoingMessage, a_player);
-		m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.Unreliable);
+		this.AddPlayerInfoToMsg(netOutgoingMessage, a_player);
+		this.m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.Unreliable);
 	}
 
 	private ServerPlayer SpawnPlayer(DatabasePlayer a_dbplayer)
 	{
 		ServerPlayer serverPlayer = null;
-		for (int i = 0; i < m_players.Length; i++)
+		for (int i = 0; i < this.m_players.Length; i++)
 		{
-			if (m_players[i] != null && m_players[i].m_accountId == a_dbplayer.aid)
+			if (this.m_players[i] != null && this.m_players[i].m_accountId == a_dbplayer.aid)
 			{
-				serverPlayer = m_players[i];
+				serverPlayer = this.m_players[i];
 				break;
 			}
 		}
 		if (serverPlayer != null && serverPlayer.m_onlineId != -1)
 		{
-			serverPlayer.Spawn(m_controlledCharPrefab, a_dbplayer);
-			SendPlayerAndNpcData(serverPlayer);
-			m_missionMan.UpdatePlayer(serverPlayer);
-			NetOutgoingMessage netOutgoingMessage = m_server.CreateMessage();
+			serverPlayer.Spawn(this.m_controlledCharPrefab, a_dbplayer);
+			this.SendPlayerAndNpcData(serverPlayer);
+			this.m_missionMan.UpdatePlayer(serverPlayer);
+			NetOutgoingMessage netOutgoingMessage = this.m_server.CreateMessage();
 			netOutgoingMessage.Write(MessageIds.SetPlayerName);
 			netOutgoingMessage.Write((byte)serverPlayer.m_onlineId);
 			netOutgoingMessage.Write(serverPlayer.m_name);
 			netOutgoingMessage.Write(serverPlayer.m_accountId);
-			m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.ReliableOrdered);
-			m_sql.RequestContainer(SQLThreadManager.PidToCid(serverPlayer.m_pid));
-			SendNotification(LNG.Get("WELCOME_PLAYER").Replace("{p_name}", serverPlayer.m_name.ToString()));
+			this.m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.ReliableOrdered);
+			this.m_sql.RequestContainer(this.m_sql.PidToCid(serverPlayer.m_pid));
 		}
 		else
 		{
@@ -1018,44 +867,45 @@ public class LidServer : LidgrenPeer
 
 	private void UpdatePlayers()
 	{
-		for (int i = 0; i < m_players.Length; i++)
+		for (int i = 0; i < this.m_players.Length; i++)
 		{
-			if (m_players[i] == null || !m_players[i].IsSpawned())
+			if (this.m_players[i] != null && this.m_players[i].IsSpawned())
 			{
-				continue;
-			}
-			if (0f < m_players[i].m_disconnectTime)
-			{
-				if (Time.time > m_players[i].m_disconnectTime)
+				if (0f < this.m_players[i].m_disconnectTime)
 				{
-					DisconnectPlayer(m_players[i]);
-				}
-				continue;
-			}
-			if (m_players[i].m_nextUpdate < Time.time)
-			{
-				m_players[i].Progress(m_updateIntervall);
-				bool flag = 0 == ++m_players[i].m_updateCount % 2;
-				NetOutgoingMessage netOutgoingMessage = m_players[i].m_connection.Peer.CreateMessage();
-				netOutgoingMessage.Write((!flag) ? MessageIds.UpdateB : MessageIds.UpdateA);
-				AddOwnPlayerToMsg(netOutgoingMessage, m_players[i]);
-				AddVehiclesToMsg(netOutgoingMessage, m_players[i]);
-				if (flag)
-				{
-					AddPlayersToMsg(netOutgoingMessage, m_players[i]);
+					if (Time.time > this.m_players[i].m_disconnectTime)
+					{
+						this.DisconnectPlayer(this.m_players[i]);
+					}
 				}
 				else
 				{
-					UpdatePlayerInventory(m_players[i]);
-					AddNpcsItemsBuildingsToMsg(netOutgoingMessage, m_players[i]);
+					if (this.m_players[i].m_nextUpdate < Time.time)
+					{
+						this.m_players[i].Progress(this.m_updateIntervall);
+						bool flag = 0 == ++this.m_players[i].m_updateCount % 2;
+						NetOutgoingMessage netOutgoingMessage = this.m_players[i].m_connection.Peer.CreateMessage();
+						netOutgoingMessage.Write((!flag) ? MessageIds.UpdateB : MessageIds.UpdateA);
+						this.AddOwnPlayerToMsg(netOutgoingMessage, this.m_players[i]);
+						this.AddVehiclesToMsg(netOutgoingMessage, this.m_players[i]);
+						if (flag)
+						{
+							this.AddPlayersToMsg(netOutgoingMessage, this.m_players[i]);
+						}
+						else
+						{
+							this.UpdatePlayerInventory(this.m_players[i]);
+							this.AddNpcsItemsBuildingsToMsg(netOutgoingMessage, this.m_players[i]);
+						}
+						this.m_players[i].m_connection.SendMessage(netOutgoingMessage, NetDeliveryMethod.Unreliable, 0);
+						this.m_players[i].m_nextUpdate = Time.time + this.m_updateIntervall;
+					}
+					if (this.m_players[i].m_updateInfoFlag)
+					{
+						this.m_players[i].m_updateInfoFlag = false;
+						this.SendPlayerInfo(this.m_players[i]);
+					}
 				}
-				m_players[i].m_connection.SendMessage(netOutgoingMessage, NetDeliveryMethod.Unreliable, 0);
-				m_players[i].m_nextUpdate = Time.time + m_updateIntervall;
-			}
-			if (m_players[i].m_updateInfoFlag)
-			{
-				m_players[i].m_updateInfoFlag = false;
-				SendPlayerInfo(m_players[i]);
 			}
 		}
 	}
@@ -1066,66 +916,43 @@ public class LidServer : LidgrenPeer
 		{
 			return;
 		}
-		int num = 0;
-		while (true)
+		for (int i = 0; i < a_player.m_inventory.m_items.Count; i++)
 		{
-			if (num >= a_player.m_inventory.m_items.Count)
+			if (a_player.m_inventory.m_items[i].flag == eDbAction.delete || a_player.m_inventory.m_items[i].flag == eDbAction.update)
 			{
-				return;
-			}
-			DatabaseItem databaseItem = a_player.m_inventory.m_items[num];
-			if (databaseItem.flag != eDbAction.delete)
-			{
-				DatabaseItem databaseItem2 = a_player.m_inventory.m_items[num];
-				if (databaseItem2.flag != eDbAction.update)
+				a_player.m_updateContainersFlag = true;
+				this.m_sql.SaveItem(a_player.m_inventory.m_items[i]);
+				if (a_player.m_inventory.m_items[i].flag == eDbAction.delete)
 				{
-					goto IL_00dc;
+					a_player.m_inventory.m_items.RemoveAt(i);
+					break;
 				}
+				DatabaseItem value = a_player.m_inventory.m_items[i];
+				value.flag = eDbAction.none;
+				a_player.m_inventory.m_items[i] = value;
 			}
-			a_player.m_updateContainersFlag = true;
-			m_sql.SaveItem(a_player.m_inventory.m_items[num]);
-			DatabaseItem databaseItem3 = a_player.m_inventory.m_items[num];
-			if (databaseItem3.flag == eDbAction.delete)
-			{
-				break;
-			}
-			DatabaseItem value = a_player.m_inventory.m_items[num];
-			value.flag = eDbAction.none;
-			a_player.m_inventory.m_items[num] = value;
-			goto IL_00dc;
-			IL_00dc:
-			num++;
 		}
-		a_player.m_inventory.m_items.RemoveAt(num);
 	}
 
 	private void UpdateItems()
 	{
 		float time = Time.time;
-		for (int i = 0; i < m_freeWorldItems.Count; i++)
+		for (int i = 0; i < this.m_freeWorldItems.Count; i++)
 		{
-			DatabaseItem databaseItem = m_freeWorldItems[i];
-			if (!(time > databaseItem.dropTime + 6f))
-			{
-				continue;
-			}
-			DatabaseItem databaseItem2 = m_freeWorldItems[i];
-			if (databaseItem2.amount == 1)
+			if (time > this.m_freeWorldItems[i].dropTime + 6f && this.m_freeWorldItems[i].amount == 1)
 			{
 				int num = -1;
-				DatabaseItem databaseItem3 = m_freeWorldItems[i];
-				if (databaseItem3.type == 2)
+				if (this.m_freeWorldItems[i].type == 2)
 				{
 					num = 60;
 				}
-				DatabaseItem databaseItem4 = m_freeWorldItems[i];
-				if (databaseItem4.type == 1)
+				if (this.m_freeWorldItems[i].type == 1)
 				{
 					num = 61;
 				}
-				if (num != -1 && m_buildingMan.CreateBuilding(num, m_freeWorldItems[i].GetPos()))
+				if (num != -1 && this.m_buildingMan.CreateBuilding(num, this.m_freeWorldItems[i].GetPos(), 0, 0f, 100, true))
 				{
-					DeleteFreeWorldItem(i);
+					this.DeleteFreeWorldItem(i);
 					i--;
 				}
 			}
@@ -1135,20 +962,11 @@ public class LidServer : LidgrenPeer
 	private void AddVehiclesToMsg(NetOutgoingMessage a_msg, ServerPlayer a_player)
 	{
 		Vector3 position = a_player.GetPosition();
-		for (int i = 0; i < m_vehicles.Length; i++)
+		for (int i = 0; i < this.m_vehicles.Length; i++)
 		{
-			if (!(null != m_vehicles[i]))
+			if (null != this.m_vehicles[i] && Mathf.Abs(this.m_vehicles[i].transform.position.x - position.x) < 22f && Mathf.Abs(this.m_vehicles[i].transform.position.z - position.z) < 19f)
 			{
-				continue;
-			}
-			Vector3 position2 = m_vehicles[i].transform.position;
-			if (Mathf.Abs(position2.x - position.x) < 22f)
-			{
-				Vector3 position3 = m_vehicles[i].transform.position;
-				if (Mathf.Abs(position3.z - position.z) < 19f)
-				{
-					AddVehicleToMsg(a_msg, i, m_vehicles[i]);
-				}
+				this.AddVehicleToMsg(a_msg, i, this.m_vehicles[i]);
 			}
 		}
 		a_msg.Write(byte.MaxValue);
@@ -1159,24 +977,11 @@ public class LidServer : LidgrenPeer
 		if (a_player != null && a_player.m_connection != null)
 		{
 			Vector3 position = a_player.GetPosition();
-			for (int i = 0; i < m_players.Length; i++)
+			for (int i = 0; i < this.m_players.Length; i++)
 			{
-				if (m_players[i] == null || !m_players[i].IsSpawned() || !(null == m_players[i].GetVehicle()) || a_player.m_pid == m_players[i].m_pid || m_players[i].m_onlineId == -1)
+				if (this.m_players[i] != null && this.m_players[i].IsSpawned() && null == this.m_players[i].GetVehicle() && a_player.m_pid != this.m_players[i].m_pid && this.m_players[i].m_onlineId != -1 && Mathf.Abs(this.m_players[i].GetPosition().x - position.x) < 22f && Mathf.Abs(this.m_players[i].GetPosition().z - position.z) < 19f)
 				{
-					continue;
-				}
-				Vector3 position2 = m_players[i].GetPosition();
-				if (Mathf.Abs(position2.x - position.x) < 22f)
-				{
-					Vector3 position3 = m_players[i].GetPosition();
-					if (Mathf.Abs(position3.z - position.z) < 19f)
-					{
-						int onlineId = m_players[i].m_onlineId;
-						Vector3 position4 = m_players[i].GetPosition();
-						float x = position4.x;
-						Vector3 position5 = m_players[i].GetPosition();
-						AddPlayerOrNpcToMsg(a_msg, onlineId, x, position5.z, m_players[i].GetRotation(), m_players[i].IsAttacking(), m_players[i].GetHealth());
-					}
+					this.AddPlayerOrNpcToMsg(a_msg, this.m_players[i].m_onlineId, this.m_players[i].GetPosition().x, this.m_players[i].GetPosition().z, this.m_players[i].GetRotation(), this.m_players[i].IsAttacking(), this.m_players[i].GetHealth());
 				}
 			}
 		}
@@ -1185,141 +990,107 @@ public class LidServer : LidgrenPeer
 
 	private void AddNpcsItemsBuildingsToMsg(NetOutgoingMessage a_msg, ServerPlayer a_player)
 	{
-		if (a_player == null || a_player.m_connection == null)
+		if (a_player != null && a_player.m_connection != null)
 		{
-			return;
-		}
-		Vector3 position = a_player.GetPosition();
-		for (int i = 0; i < m_npcs.Length; i++)
-		{
-			if (!(null != m_npcs[i]))
+			Vector3 position = a_player.GetPosition();
+			for (int i = 0; i < this.m_npcs.Length; i++)
 			{
-				continue;
-			}
-			Vector3 position2 = m_npcs[i].transform.position;
-			if (Mathf.Abs(position2.x - position.x) < 22f)
-			{
-				Vector3 position3 = m_npcs[i].transform.position;
-				if (Mathf.Abs(position3.z - position.z) < 19f)
+				if (null != this.m_npcs[i] && Mathf.Abs(this.m_npcs[i].transform.position.x - position.x) < 22f && Mathf.Abs(this.m_npcs[i].transform.position.z - position.z) < 19f)
 				{
-					int a_id = i;
-					Vector3 position4 = m_npcs[i].transform.position;
-					float x = position4.x;
-					Vector3 position5 = m_npcs[i].transform.position;
-					float z = position5.z;
-					Vector3 eulerAngles = m_npcs[i].transform.rotation.eulerAngles;
-					AddPlayerOrNpcToMsg(a_msg, a_id, x, z, eulerAngles.y, eBodyBaseState.attacking == m_npcs[i].GetBodyState(), m_npcs[i].GetHealth());
+					this.AddPlayerOrNpcToMsg(a_msg, i, this.m_npcs[i].transform.position.x, this.m_npcs[i].transform.position.z, this.m_npcs[i].transform.rotation.eulerAngles.y, eBodyBaseState.attacking == this.m_npcs[i].GetBodyState(), this.m_npcs[i].GetHealth());
 				}
 			}
-		}
-		a_msg.Write(short.MaxValue);
-		for (int j = 0; j < m_buildingMan.m_buildings.Count; j++)
-		{
-			if (!(null != m_buildingMan.m_buildings[j]))
+			a_msg.Write(short.MaxValue);
+			for (int j = 0; j < this.m_buildingMan.m_buildings.Count; j++)
 			{
-				continue;
-			}
-			Vector3 position6 = m_buildingMan.m_buildings[j].transform.position;
-			if (Mathf.Abs(position6.x - position.x) < 22f)
-			{
-				Vector3 position7 = m_buildingMan.m_buildings[j].transform.position;
-				if (Mathf.Abs(position7.z - position.z) < 19f)
+				if (null != this.m_buildingMan.m_buildings[j] && Mathf.Abs(this.m_buildingMan.m_buildings[j].transform.position.x - position.x) < 22f && Mathf.Abs(this.m_buildingMan.m_buildings[j].transform.position.z - position.z) < 19f)
 				{
-					AddBuildingToMsg(a_msg, m_buildingMan.m_buildings[j], a_player.m_pid == m_buildingMan.m_buildings[j].GetOwnerId());
+					this.AddBuildingToMsg(a_msg, this.m_buildingMan.m_buildings[j], a_player.m_pid == this.m_buildingMan.m_buildings[j].GetOwnerId());
 				}
 			}
-		}
-		a_msg.Write(byte.MaxValue);
-		for (int k = 0; k < m_freeWorldItems.Count; k++)
-		{
-			DatabaseItem databaseItem = m_freeWorldItems[k];
-			if (Mathf.Abs(databaseItem.x - position.x) < 22f)
+			a_msg.Write(byte.MaxValue);
+			for (int k = 0; k < this.m_freeWorldItems.Count; k++)
 			{
-				DatabaseItem databaseItem2 = m_freeWorldItems[k];
-				if (Mathf.Abs(databaseItem2.y - position.z) < 19f)
+				if (Mathf.Abs(this.m_freeWorldItems[k].x - position.x) < 22f && Mathf.Abs(this.m_freeWorldItems[k].y - position.z) < 19f)
 				{
-					AddItemToMsg(a_msg, m_freeWorldItems[k]);
+					this.AddItemToMsg(a_msg, this.m_freeWorldItems[k]);
 				}
 			}
+			a_msg.Write(byte.MaxValue);
+			this.AddRequestedItemsToMsg(a_msg, a_player);
+			a_msg.Write(byte.MaxValue);
 		}
-		a_msg.Write(byte.MaxValue);
-		AddRequestedItemsToMsg(a_msg, a_player);
-		a_msg.Write(byte.MaxValue);
 	}
 
 	private void AddRequestedItemsToMsg(NetOutgoingMessage a_msg, ServerPlayer a_player)
 	{
 		bool flag = false;
-		if (!a_player.m_updateContainersFlag)
+		if (a_player.m_updateContainersFlag)
 		{
-			return;
-		}
-		for (int i = 0; i < a_player.m_inventory.m_items.Count; i++)
-		{
-			DatabaseItem databaseItem = a_player.m_inventory.m_items[i];
-			if (0 < databaseItem.iid)
+			for (int i = 0; i < a_player.m_inventory.m_items.Count; i++)
 			{
-				AddItemToMsg(a_msg, a_player.m_inventory.m_items[i]);
-				flag = true;
-			}
-		}
-		ItemContainer itemContainer = null;
-		if (a_player.m_freeWorldContainer != null)
-		{
-			itemContainer = a_player.m_freeWorldContainer;
-		}
-		else if (a_player.m_persistentContainer != null)
-		{
-			itemContainer = a_player.m_persistentContainer;
-		}
-		else if (null != a_player.m_shopContainer)
-		{
-			itemContainer = a_player.m_shopContainer.m_container;
-		}
-		if (itemContainer != null)
-		{
-			if (0 < itemContainer.m_items.Count)
-			{
-				for (int j = 0; j < itemContainer.m_items.Count; j++)
+				if (0 < a_player.m_inventory.m_items[i].iid)
 				{
-					AddItemToMsg(a_msg, itemContainer.m_items[j]);
+					this.AddItemToMsg(a_msg, a_player.m_inventory.m_items[i]);
+					flag = true;
 				}
 			}
-			else
+			ItemContainer itemContainer = null;
+			if (a_player.m_freeWorldContainer != null)
 			{
-				DatabaseItem a_item = new DatabaseItem(0);
-				a_item.x += 6f;
-				AddItemToMsg(a_msg, a_item);
+				itemContainer = a_player.m_freeWorldContainer;
 			}
-			flag = true;
+			else if (a_player.m_persistentContainer != null)
+			{
+				itemContainer = a_player.m_persistentContainer;
+			}
+			else if (null != a_player.m_shopContainer)
+			{
+				itemContainer = a_player.m_shopContainer.m_container;
+			}
+			if (itemContainer != null)
+			{
+				if (0 < itemContainer.m_items.Count)
+				{
+					for (int j = 0; j < itemContainer.m_items.Count; j++)
+					{
+						this.AddItemToMsg(a_msg, itemContainer.m_items[j]);
+					}
+				}
+				else
+				{
+					DatabaseItem a_item = new DatabaseItem(0, 0f, 0f, 1, false, 0, 0);
+					a_item.x += 6f;
+					this.AddItemToMsg(a_msg, a_item);
+				}
+				flag = true;
+			}
+			if (!flag)
+			{
+				DatabaseItem a_item2 = new DatabaseItem(0, 0f, 0f, 1, false, 0, 0);
+				this.AddItemToMsg(a_msg, a_item2);
+			}
+			a_player.m_updateContainersFlag = false;
 		}
-		if (!flag)
-		{
-			DatabaseItem a_item2 = new DatabaseItem(0);
-			AddItemToMsg(a_msg, a_item2);
-		}
-		a_player.m_updateContainersFlag = false;
 	}
 
 	private void AddOwnPlayerToMsg(NetOutgoingMessage a_msg, ServerPlayer a_player)
 	{
-		int num = (a_player.IsAttacking() ? 128 : 0) | ((int)a_player.GetHealth() & 0x7F);
-		int num2 = ((null != a_player.GetVehicle()) ? 128 : 0) | ((int)a_player.GetEnergy() & 0x7F);
+		int num = ((!a_player.IsAttacking()) ? 0 : 128) | ((int)a_player.GetHealth() & 127);
+		int num2 = ((!(null != a_player.GetVehicle())) ? 0 : 128) | ((int)a_player.GetEnergy() & 127);
 		a_msg.Write((byte)num);
 		a_msg.Write((byte)num2);
 		if (null == a_player.GetVehicle())
 		{
-			Vector3 position = a_player.GetPosition();
-			a_msg.Write((short)(position.x * 10.00001f));
-			Vector3 position2 = a_player.GetPosition();
-			a_msg.Write((short)(position2.z * 10.00001f));
+			a_msg.Write((short)(a_player.GetPosition().x * 10.00001f));
+			a_msg.Write((short)(a_player.GetPosition().z * 10.00001f));
 			a_msg.Write((byte)(a_player.GetRotation() / 360f * 255f));
 		}
 	}
 
 	private void AddPlayerOrNpcToMsg(NetOutgoingMessage a_msg, int a_id, float a_x, float a_z, float a_rotation, bool a_isAttacking, float a_health)
 	{
-		int num = (a_isAttacking ? 128 : 0) | ((int)a_health & 0x7F);
+		int num = ((!a_isAttacking) ? 0 : 128) | ((int)a_health & 127);
 		a_msg.Write((short)a_id);
 		a_msg.Write((short)(a_x * 10.00001f));
 		a_msg.Write((short)(a_z * 10.00001f));
@@ -1337,31 +1108,25 @@ public class LidServer : LidgrenPeer
 
 	private void AddBuildingToMsg(NetOutgoingMessage a_msg, ServerBuilding a_building, bool a_isPlayersBuilding)
 	{
-		Vector3 eulerAngles = a_building.transform.rotation.eulerAngles;
-		float num = eulerAngles.y / 360f;
-		int num2 = (((int)(a_building.GetState() * 3f + 0.5f) << 5) & 0x60) | ((int)(num * 31f) & 0x1F);
+		float num = a_building.transform.rotation.eulerAngles.y / 360f;
+		int num2 = ((int)(a_building.GetState() * 3f + 0.5f) << 5 & 96) | ((int)(num * 31f) & 31);
 		if (a_isPlayersBuilding)
 		{
-			num2 |= 0x80;
+			num2 |= 128;
 		}
 		a_msg.Write((byte)a_building.m_type);
-		Vector3 position = a_building.transform.position;
-		a_msg.Write((short)(position.x * 10.00001f));
-		Vector3 position2 = a_building.transform.position;
-		a_msg.Write((short)(position2.z * 10.00001f));
+		a_msg.Write((short)(a_building.transform.position.x * 10.00001f));
+		a_msg.Write((short)(a_building.transform.position.z * 10.00001f));
 		a_msg.Write((byte)num2);
 	}
 
 	private void AddVehicleToMsg(NetOutgoingMessage a_msg, int a_id, ServerVehicle a_vehicle)
 	{
-		int num = (a_vehicle.IsNpcControlled() ? 128 : 0) | ((int)a_vehicle.GetHealth() & 0x7F);
+		int num = ((!a_vehicle.IsNpcControlled()) ? 0 : 128) | ((int)a_vehicle.GetHealth() & 127);
 		a_msg.Write((byte)a_id);
-		Vector3 position = a_vehicle.transform.position;
-		a_msg.Write((short)(position.x * 10.00001f));
-		Vector3 position2 = a_vehicle.transform.position;
-		a_msg.Write((short)(position2.z * 10.00001f));
-		Vector3 eulerAngles = a_vehicle.transform.rotation.eulerAngles;
-		a_msg.Write((byte)(eulerAngles.y / 360f * 255f));
+		a_msg.Write((short)(a_vehicle.transform.position.x * 10.00001f));
+		a_msg.Write((short)(a_vehicle.transform.position.z * 10.00001f));
+		a_msg.Write((byte)(a_vehicle.transform.rotation.eulerAngles.y / 360f * 255f));
 		a_msg.Write((byte)num);
 		for (int i = 0; i < 4; i++)
 		{
@@ -1371,131 +1136,74 @@ public class LidServer : LidgrenPeer
 
 	private void AddPlayerInfoToMsg(NetOutgoingMessage a_msg, ServerPlayer a_player)
 	{
-		int num;
-		if (a_player.m_inventory != null)
-		{
-			DatabaseItem itemFromPos = a_player.m_inventory.GetItemFromPos(0f, 0f);
-			num = itemFromPos.type;
-		}
-		else
-		{
-			num = 0;
-		}
-		int num2 = num;
+		int num = (a_player.m_inventory == null) ? 0 : a_player.m_inventory.GetItemFromPos(0f, 0f).type;
 		int lookIndex = a_player.m_lookIndex;
 		int skinIndex = a_player.m_skinIndex;
-		int num3;
-		if (a_player.m_inventory != null)
-		{
-			DatabaseItem itemFromPos2 = a_player.m_inventory.GetItemFromPos(0f, 2f);
-			num3 = itemFromPos2.type;
-		}
-		else
-		{
-			num3 = 0;
-		}
-		int num4 = num3;
-		a_msg.Write((byte)num2);
+		int num2 = (a_player.m_inventory == null) ? 0 : a_player.m_inventory.GetItemFromPos(0f, 2f).type;
+		a_msg.Write((byte)num);
 		a_msg.Write((byte)lookIndex);
 		a_msg.Write((byte)skinIndex);
-		a_msg.Write((byte)num4);
+		a_msg.Write((byte)num2);
 		a_msg.Write((byte)a_player.GetRank());
 		a_msg.Write((byte)a_player.GetKarma());
 		a_msg.Write((byte)a_player.m_charType);
 	}
 
-	public ServerNpc GetNpc(int a_onlineId)
+	private ServerNpc GetNpc(int a_onlineId)
 	{
-		if (a_onlineId < 0 || a_onlineId > m_npcs.Length)
+		if (a_onlineId < 0 || a_onlineId > this.m_npcs.Length)
 		{
 			return null;
 		}
-		return m_npcs[a_onlineId];
+		return this.m_npcs[a_onlineId];
 	}
 
-	public ServerPlayer GetPlayer(int a_onlineId)
+	private ServerPlayer GetPlayer(int a_onlineId)
 	{
-		if (a_onlineId < 0 || a_onlineId > m_players.Length)
+		if (a_onlineId < 0 || a_onlineId > this.m_players.Length)
 		{
 			return null;
 		}
-		return m_players[a_onlineId];
+		return this.m_players[a_onlineId];
 	}
 
-	public ServerPlayer GetPlayer(string a_playerName, int a_onlineId)
+	private void DeletePlayer(int a_onlineId)
 	{
-		ServerPlayer currentPlayer;
-		currentPlayer = GetPlayer(a_onlineId);
-		var p_name = currentPlayer.m_name.ToString();
-		if (currentPlayer != null)
+		if (a_onlineId >= 0 && a_onlineId < this.m_players.Length)
 		{
-			currentPlayer.m_name.ToString();
-		}
-		return null; //wdhwduhwduhw
-		
-	}
-
-	public void DeletePlayer(int a_onlineId)
-	{
-		ServerPlayer currentPlayer;
-		currentPlayer = GetPlayer(a_onlineId);
-
-		var playerLeave = currentPlayer.m_name.ToString();
-		SendNotification(playerLeave + " left the server!");
-
-		ServerPlayer player = null;
-		
-		if (a_onlineId >= 0 && a_onlineId < m_players.Length)
-		{
-
-			m_players[a_onlineId].Remove();
-			m_players[a_onlineId] = null;
+			this.m_players[a_onlineId].Remove();
+			this.m_players[a_onlineId] = null;
 		}
 	}
 
-	public void DeleteFreeWorldItem(Vector3 a_pos, bool a_containerOnly = false)
+	private void DeleteFreeWorldItem(Vector3 a_pos, bool a_containerOnly = false)
 	{
-		int num = 0;
-		while (true)
+		for (int i = 0; i < this.m_freeWorldItems.Count; i++)
 		{
-			if (num >= m_freeWorldItems.Count)
+			if ((this.m_freeWorldItems[i].GetPos() - a_pos).sqrMagnitude < 0.1f && (!a_containerOnly || Items.IsContainer(this.m_freeWorldItems[i].type)))
 			{
-				return;
+				this.DeleteFreeWorldItem(i);
+				break;
 			}
-			if ((m_freeWorldItems[num].GetPos() - a_pos).sqrMagnitude < 0.1f)
-			{
-				if (!a_containerOnly)
-				{
-					break;
-				}
-				DatabaseItem databaseItem = m_freeWorldItems[num];
-				if (Items.IsContainer(databaseItem.type))
-				{
-					break;
-				}
-			}
-			num++;
 		}
-		DeleteFreeWorldItem(num);
 	}
 
 	private void DeleteFreeWorldItem(int a_index)
 	{
-		DatabaseItem databaseItem = m_freeWorldItems[a_index];
-		if (Items.IsContainer(databaseItem.type))
+		if (Items.IsContainer(this.m_freeWorldItems[a_index].type))
 		{
-			string key = m_freeWorldItems[a_index].GetPos().ToString();
-			ItemContainer itemContainer = (ItemContainer)m_freeWorldContainers[key];
-			for (int i = 0; i < m_players.Length; i++)
+			string key = this.m_freeWorldItems[a_index].GetPos().ToString();
+			ItemContainer itemContainer = (ItemContainer)this.m_freeWorldContainers[key];
+			for (int i = 0; i < this.m_players.Length; i++)
 			{
-				if (m_players[i] != null && itemContainer != null && m_players[i].m_freeWorldContainer == itemContainer)
+				if (this.m_players[i] != null && itemContainer != null && this.m_players[i].m_freeWorldContainer == itemContainer)
 				{
-					m_players[i].ResetContainers();
+					this.m_players[i].ResetContainers();
 				}
 			}
-			m_freeWorldContainers.Remove(key);
+			this.m_freeWorldContainers.Remove(key);
 		}
-		m_freeWorldItems.RemoveAt(a_index);
+		this.m_freeWorldItems.RemoveAt(a_index);
 	}
 
 	private void SendPlayerAndNpcData(ServerPlayer a_player)
@@ -1505,47 +1213,47 @@ public class LidServer : LidgrenPeer
 		netOutgoingMessage.Write((byte)a_player.m_onlineId);
 		netOutgoingMessage.Write((byte)(a_player.GetRankProgress() * 255f));
 		netOutgoingMessage.Write(a_player.m_gold);
-		netOutgoingMessage.Write(m_dayNightCycle);
-		netOutgoingMessage.Write(m_dayNightCycleSpeed);
+		netOutgoingMessage.Write(this.m_dayNightCycle);
+		netOutgoingMessage.Write(this.m_dayNightCycleSpeed);
 		int num = 0;
-		for (int i = 0; i < m_server.ConnectionsCount; i++)
+		for (int i = 0; i < this.m_server.ConnectionsCount; i++)
 		{
-			int a_id = (int)m_server.Connections[i].Tag;
-			if (IsValidPlayer(a_id))
+			int a_id = (int)this.m_server.Connections[i].Tag;
+			if (this.IsValidPlayer(a_id))
 			{
 				num++;
 			}
 		}
 		netOutgoingMessage.Write((byte)num);
-		for (int j = 0; j < m_server.ConnectionsCount; j++)
+		for (int j = 0; j < this.m_server.ConnectionsCount; j++)
 		{
-			int num2 = (int)m_server.Connections[j].Tag;
-			if (IsValidPlayer(num2))
+			int num2 = (int)this.m_server.Connections[j].Tag;
+			if (this.IsValidPlayer(num2))
 			{
 				netOutgoingMessage.Write((byte)num2);
-				netOutgoingMessage.Write(m_players[num2].m_name);
-				netOutgoingMessage.Write(m_players[num2].m_accountId);
-				AddPlayerInfoToMsg(netOutgoingMessage, m_players[num2]);
+				netOutgoingMessage.Write(this.m_players[num2].m_name);
+				netOutgoingMessage.Write(this.m_players[num2].m_accountId);
+				this.AddPlayerInfoToMsg(netOutgoingMessage, this.m_players[num2]);
 			}
 		}
-		netOutgoingMessage.Write((short)m_npcs.Length);
-		for (int k = 0; k < m_npcs.Length; k++)
+		netOutgoingMessage.Write((short)this.m_npcs.Length);
+		for (int k = 0; k < this.m_npcs.Length; k++)
 		{
-			if (null != m_npcs[k])
+			if (null != this.m_npcs[k])
 			{
-				netOutgoingMessage.Write((byte)m_npcs[k].GetHandItem());
-				netOutgoingMessage.Write((byte)m_npcs[k].GetLookItem());
-				netOutgoingMessage.Write((byte)m_npcs[k].GetBodyItem());
-				netOutgoingMessage.Write((byte)m_npcs[k].m_npcType);
+				netOutgoingMessage.Write((byte)this.m_npcs[k].GetHandItem());
+				netOutgoingMessage.Write((byte)this.m_npcs[k].GetLookItem());
+				netOutgoingMessage.Write((byte)this.m_npcs[k].GetBodyItem());
+				netOutgoingMessage.Write((byte)this.m_npcs[k].m_npcType);
 			}
 		}
-		if (m_staticBuildings != null && 0 < m_staticBuildings.Length)
+		if (this.m_staticBuildings != null && 0 < this.m_staticBuildings.Length)
 		{
-			for (int l = 0; l < m_staticBuildings.Length; l++)
+			for (int l = 0; l < this.m_staticBuildings.Length; l++)
 			{
-				if (null != m_staticBuildings[l] && m_staticBuildings[l].m_type > 0 && m_staticBuildings[l].m_type < 255)
+				if (null != this.m_staticBuildings[l] && this.m_staticBuildings[l].m_type > 0 && this.m_staticBuildings[l].m_type < 255)
 				{
-					AddBuildingToMsg(netOutgoingMessage, m_staticBuildings[l], false);
+					this.AddBuildingToMsg(netOutgoingMessage, this.m_staticBuildings[l], false);
 				}
 			}
 		}
@@ -1555,29 +1263,30 @@ public class LidServer : LidgrenPeer
 
 	private bool IsValidPlayer(int a_id)
 	{
-		return -1 < a_id && a_id < m_players.Count() && null != m_players[a_id];
+		return -1 < a_id && a_id < this.m_players.Count<ServerPlayer>() && null != this.m_players[a_id];
 	}
 
-
-	// STOP ADDING THINGS HERE YOU BIG DUMB DUMB STOOPID HED
-	public void HandleChatCommand(string a_chatText, ServerPlayer a_player, NetIncomingMessage msg)
+	private void HandleChatCommand(string a_chatText, ServerPlayer a_player)
 	{
-		string[] array = a_chatText.Split(' ');
-		var a_pname = a_player.m_name.ToString();
-		var p_skin = a_player.m_skinIndex;
-		if ("/suicide" == array[0] || "/kill" == array[0] || "/k" == array[0])
+		string[] array = a_chatText.Split(new char[]
+		{
+			' '
+		});
+		if ("/suicide" == array[0] || "/kill" == array[0])
 		{
 			a_player.ChangeHealthBy(-10000f);
-			SendNotification("[p_name] just commited toaster bath.".Replace("[p_name]", a_pname));
-			Debug.Log(a_player.m_name + " Commited not alive!");
 		}
 		else if ("/login" == array[0] && array.Length > 1 && ConfigFile.GetVar("adminpassword", "4544") == array[1])
 		{
 			a_player.m_isAdmin = true;
-			SendMessageToPlayerLocal("<b><color='#008000ff'>Admin commands unlocked.</color></b>", a_player, msg);
-			Debug.Log(a_player.m_name + " (Steam ID: " + a_player.m_accountId + ") just logged in as admin!");
+			Debug.Log(string.Concat(new object[]
+			{
+				a_player.m_name,
+				" (Steam ID: ",
+				a_player.m_accountId,
+				") just logged in as admin"
+			}));
 		}
-
 		else if ("/dropgold" == array[0] && array.Length > 1)
 		{
 			int itemAmountByType = a_player.m_inventory.GetItemAmountByType(254);
@@ -1588,7 +1297,7 @@ public class LidServer : LidgrenPeer
 				{
 					num = int.Parse(array[1]);
 				}
-				catch (Exception)
+				catch (Exception ex)
 				{
 					num = 0;
 				}
@@ -1596,136 +1305,164 @@ public class LidServer : LidgrenPeer
 				{
 					num = Mathf.Min(itemAmountByType, num);
 					a_player.m_inventory.DeclineItemAmountByType(254, num);
-					CreateFreeWorldItem(254, num, a_player.GetPosition());
-					SendMoneyUpdate(a_player);
+					this.CreateFreeWorldItem(254, num, a_player.GetPosition());
+					this.SendMoneyUpdate(a_player);
 				}
 			}
 		}
-		if (!a_player.m_isAdmin)
+		else if ("/char" == array[0] && array.Length > 1)
 		{
-			return;
-		}
-		if ("/stats" == array[0])
-		{
-			NetOutgoingMessage netOutgoingMessage = a_player.m_connection.Peer.CreateMessage();
-			netOutgoingMessage.Write(MessageIds.ChatLocal);
-			netOutgoingMessage.Write("[SERVER]: fps_cur: " + (int)(1f / Time.smoothDeltaTime) + "\n fps_alltime: " + (int)((float)Time.frameCount / Time.time) + " \nbuildings: " + m_buildingMan.m_buildings.Count + " \nitems: " + m_freeWorldItems.Count + " \ntempcontainers: " + m_freeWorldContainers.Count + "POS:" + a_player.GetPosition().ToString());
-			a_player.m_connection.SendMessage(netOutgoingMessage, NetDeliveryMethod.ReliableOrdered, 1);
-		}
-		else if ("/airdrop" == array[0])
-		{
-			Invoke("CreateAirdrop", 3f);
-			// Invoke("CreateKitTest", 3f);
-		}
-		else if ("/shutdown" == array[0])
-		{
-			m_serverRestartTime = Time.time + 300f;
-		}
-		else if ("/shutdownnow" == array[0])
-		{
-			m_serverRestartTime = Time.time;
-		}
-		else if ("/message" == array[0])
-		{
-			SendNotification(a_chatText.Substring(8));
-		}
-		else if ("/addxp" == array[0] && array.Length > 1)
-		{
-			int num2 = 0;
+			eCharType eCharType = eCharType.ePlayer;
 			try
 			{
-				num2 = int.Parse(array[1]);
-
+				eCharType = (eCharType)int.Parse(array[1]);
 			}
-			catch (Exception)
+			catch (Exception ex2)
 			{
-
-
-				num2 = 0;
-				if (num2 == 0)
+				eCharType = eCharType.ePlayer;
+			}
+			if ((a_player.m_isAdmin || eCharType == eCharType.ePlayer || eCharType == eCharType.ePlayerFemale) && a_player.m_charType != eCharType)
+			{
+				a_player.m_charType = eCharType;
+				a_player.m_updateInfoFlag = true;
+			}
+		}
+		if (a_player.m_isAdmin)
+		{
+			if ("/stats" == array[0])
+			{
+				NetOutgoingMessage netOutgoingMessage = a_player.m_connection.Peer.CreateMessage();
+				netOutgoingMessage.Write(MessageIds.Chat);
+				netOutgoingMessage.Write(string.Concat(new object[]
 				{
-					SendMessageToPlayerLocal(LNG.Get("CMD_RETURN_USAGE_XP"), a_player, msg);
+					"[SERVER]: fps_cur: ",
+					(int)(1f / Time.smoothDeltaTime),
+					" fps_alltime: ",
+					(int)((float)Time.frameCount / Time.time),
+					" buildings: ",
+					this.m_buildingMan.m_buildings.Count,
+					" fwitems: ",
+					this.m_freeWorldItems.Count,
+					" fwicontainers: ",
+					this.m_freeWorldContainers.Count
+				}));
+				a_player.m_connection.SendMessage(netOutgoingMessage, NetDeliveryMethod.ReliableOrdered, 1);
+			}
+			else if ("/airdrop" == array[0])
+			{
+				base.Invoke("CreateAirdrop", 3f);
+			}
+			else if ("/shutdown" == array[0])
+			{
+				this.m_serverRestartTime = Time.time + 300f;
+			}
+			else if ("/shutdownnow" == array[0])
+			{
+				this.m_serverRestartTime = Time.time;
+			}
+			else if ("/message" == array[0])
+			{
+				this.SendNotification(a_chatText.Substring(8));
+			}
+			else if ("/addxp" == array[0] && array.Length > 1)
+			{
+				int a_xp = 0;
+				try
+				{
+					a_xp = int.Parse(array[1]);
 				}
-
-			}
-			SendMessageToPlayerLocal("Added " + num2.ToString() + "XP!", a_player, msg);
-			a_player.AddXp(num2);
-
-		}
-		else if ("/addkarma" == array[0] && array.Length > 1)
-		{
-			int num3 = 0;
-			try
-			{
-				num3 = int.Parse(array[1]);
-			}
-			catch (Exception)
-			{
-				SendMessageToPlayerLocal(LNG.Get("CMD_RETURN_USAGE_KARMA"), a_player, msg);
-				num3 = 0;
-
-			}
-			SendMessageToPlayerLocal("Added " + num3.ToString() + " Karma Points!", a_player, msg);
-			a_player.ChangeKarmaBy(num3);
-		}
-		else if ("/addhp" == array[0] && array.Length > 1)
-		{
-			int num4 = 0;
-			try
-			{
-				num4 = int.Parse(array[1]);
-			}
-			catch (Exception)
-			{
-				SendMessageToPlayerLocal(LNG.Get("CMD_RETURN_USAGE_HP"), a_player, msg);
-				num4 = 0;
-
-			}
-			SendMessageToPlayerLocal("Added " + num4.ToString() + "HP!", a_player, msg);
-			a_player.ChangeHealthBy(num4);
-		}
-		else if ("/addenergy" == array[0] && array.Length > 1)
-		{
-			int num5 = 0;
-			try
-			{
-				num5 = int.Parse(array[1]);
-			}
-			catch (Exception)
-			{
-				SendMessageToPlayerLocal(LNG.Get("CMD_RETURN_USAGE_ENERGY"), a_player, msg);
-				num5 = 0;
-
-			}
-			SendMessageToPlayerLocal("Added " + num5.ToString() + " Energy!", a_player, msg);
-			a_player.ChangeEnergyBy(num5);
-
-		}
-		else if ("/spawn" == array[0] && array.Length > 1)
-		{
-			int num7 = 0;
-			int num8 = 1;
-			string i_name;
-			string i_amount;
-			try
-			{
-				num7 = int.Parse(array[1]);
-				num8 = ((array.Length <= 2) ? 1 : int.Parse(array[2]));
-			}
-			catch (Exception)
-			{
-				num7 = 0;
-				num8 = 1;
-			}
-			if (num7 != 0)
-			{
-				ItemDef itemDef = Items.GetItemDef(num7);
-				if (itemDef.ident != null)
+				catch (Exception ex3)
 				{
-					i_name = itemDef.ident.ToString();
-					CreateFreeWorldItem(num7, num8, a_player.GetPosition());
-					i_amount = num8.ToString();
-					SendMessageToPlayerLocal("Spawned item: "+i_name+" X:"+i_amount, a_player, msg);
+					a_xp = 0;
+				}
+				a_player.AddXp(a_xp);
+			}
+			else if ("/addkarma" == array[0] && array.Length > 1)
+			{
+				int num2 = 0;
+				try
+				{
+					num2 = int.Parse(array[1]);
+				}
+				catch (Exception ex4)
+				{
+					num2 = 0;
+				}
+				a_player.ChangeKarmaBy((float)num2);
+			}
+			else if ("/addhp" == array[0] && array.Length > 1)
+			{
+				int num3 = 0;
+				try
+				{
+					num3 = int.Parse(array[1]);
+				}
+				catch (Exception ex5)
+				{
+					num3 = 0;
+				}
+				a_player.ChangeHealthBy((float)num3);
+			}
+			else if ("/addenergy" == array[0] && array.Length > 1)
+			{
+				int num4 = 0;
+				try
+				{
+					num4 = int.Parse(array[1]);
+				}
+				catch (Exception ex6)
+				{
+					num4 = 0;
+				}
+				a_player.ChangeEnergyBy((float)num4);
+			}
+			else if ("/setcondition" == array[0] && array.Length > 1)
+			{
+				int conditions = 0;
+				try
+				{
+					conditions = int.Parse(array[1]);
+				}
+				catch (Exception ex7)
+				{
+					conditions = 0;
+				}
+				a_player.SetConditions(conditions);
+			}
+			else if ("/drop" == array[0] && array.Length > 1)
+			{
+				int num5 = 0;
+				int a_amount = 1;
+				try
+				{
+					num5 = int.Parse(array[1]);
+					a_amount = ((array.Length <= 2) ? 1 : int.Parse(array[2]));
+				}
+				catch (Exception ex8)
+				{
+					num5 = 0;
+					a_amount = 1;
+				}
+				if (num5 != 0 && Items.GetItemDef(num5).ident != null)
+				{
+					this.CreateFreeWorldItem(num5, a_amount, a_player.GetPosition());
+				}
+			}
+			else if ("/teleport" == array[0] && array.Length > 2)
+			{
+				int num6 = 0;
+				int num7 = 0;
+				try
+				{
+					num6 = int.Parse(array[1]);
+					num7 = int.Parse(array[2]);
+				}
+				catch (Exception ex9)
+				{
+				}
+				if (num6 != 0 && num7 != 0)
+				{
+					a_player.SetPosition(new Vector3((float)num6, 0f, (float)num7));
 				}
 			}
 		}
@@ -1736,68 +1473,35 @@ public class LidServer : LidgrenPeer
 		int a_containerType = 121;
 		Vector3 a_pos = new Vector3(UnityEngine.Random.Range(-345f, -335f), 0f, UnityEngine.Random.Range(-240f, -230f));
 		int num = UnityEngine.Random.Range(60, 66);
-		CreateTempContainerItem(num, 1, a_pos, a_containerType);
-		ItemDef itemDef = Items.GetItemDef(num);
-		int ammoItemType = itemDef.ammoItemType;
-		CreateTempContainerItem(ammoItemType, 100, a_pos, a_containerType);
+		this.CreateTempContainerItem(num, 1, a_pos, a_containerType);
+		int ammoItemType = Items.GetItemDef(num).ammoItemType;
+		this.CreateTempContainerItem(ammoItemType, 100, a_pos, a_containerType);
 		int a_newItemType = UnityEngine.Random.Range(90, 94);
-		CreateTempContainerItem(a_newItemType, 1, a_pos, a_containerType);
+		this.CreateTempContainerItem(a_newItemType, 1, a_pos, a_containerType);
 		int a_newItemType2 = UnityEngine.Random.Range(210, 220);
-		CreateTempContainerItem(a_newItemType2, 1, a_pos, a_containerType);
-		CreateTempContainerItem(2, 10, a_pos, a_containerType);
-		CreateTempContainerItem(3, 10, a_pos, a_containerType);
-		CreateTempContainerItem(130, 200, a_pos, a_containerType);
-		CreateTempContainerItem(131, 200, a_pos, a_containerType);
-		CreateTempContainerItem(132, 200, a_pos, a_containerType);
-		CreateTempContainerItem(133, 200, a_pos, a_containerType);
-		SendNotification("An airdrop has spawned, be the first there for GREAT LOOT!!!");
+		this.CreateTempContainerItem(a_newItemType2, 1, a_pos, a_containerType);
+		this.CreateTempContainerItem(2, 10, a_pos, a_containerType);
+		this.CreateTempContainerItem(3, 10, a_pos, a_containerType);
+		this.CreateTempContainerItem(130, 200, a_pos, a_containerType);
+		this.CreateTempContainerItem(131, 200, a_pos, a_containerType);
+		this.CreateTempContainerItem(132, 200, a_pos, a_containerType);
+		this.CreateTempContainerItem(133, 200, a_pos, a_containerType);
 	}
-
-/*  private void CreateKit(ServerPlayer serverPlayer)
-	{
-		int a_containerType = 121;
-		Vector3 a_pos = serverPlayer.GetPosition();
-		CreateTempContainerItem(154, 1, a_pos, a_containerType);   // Guardian-Vest
-		CreateTempContainerItem(170, 1, a_pos, a_containerType);   // Shoes
-																		  // Weapons
-		CreateTempContainerItem(99, 1, a_pos, a_containerType);    // Giant Sword
-		CreateTempContainerItem(93, 1, a_pos, a_containerType);   // Knife
-		CreateTempContainerItem(65, 1, a_pos, a_containerType);   // AK47
-																		 // AMMO
-		CreateTempContainerItem(43, 35, a_pos, a_containerType);   // 762
-																		  // Food
-		CreateTempContainerItem(12, 2, a_pos, a_containerType);     // Cooked_fish
-		CreateTempContainerItem(8, 4, a_pos, a_containerType);     // Energy-Bar
-		CreateTempContainerItem(16, 1, a_pos, a_containerType);    // Wine
-																		  // ITEMS
-		CreateTempContainerItem(140, 2, a_pos, a_containerType);   // Bandages
-		CreateTempContainerItem(142, 2, a_pos, a_containerType);   // Painkillers
-		CreateTempContainerItem(143, 1, a_pos, a_containerType);   // Medkit
-		SendNotification("A kit has spawned, be the first there for GREAT LOOT!!!");
-	}
-*/
 
 	private bool OpenShopContainer(ServerPlayer a_player)
 	{
-		if (a_player != null && m_shopContainers != null)
+		if (a_player != null && this.m_shopContainers != null)
 		{
-			Vector3 zero = Vector3.zero;
-			for (int i = 0; i < m_shopContainers.Length; i++)
+			Vector3 vector = Vector3.zero;
+			for (int i = 0; i < this.m_shopContainers.Length; i++)
 			{
-				zero = m_shopContainers[i].transform.position;
-				float x = zero.x;
-				Vector3 position = a_player.GetPosition();
-				if (Mathf.Abs(x - position.x) < 1.4f)
+				vector = this.m_shopContainers[i].transform.position;
+				if (Mathf.Abs(vector.x - a_player.GetPosition().x) < 1.4f && Mathf.Abs(vector.z - a_player.GetPosition().z) < 1.4f)
 				{
-					float z = zero.z;
-					Vector3 position2 = a_player.GetPosition();
-					if (Mathf.Abs(z - position2.z) < 1.4f)
-					{
-						a_player.m_shopContainer = m_shopContainers[i];
-						a_player.m_updateContainersFlag = true;
-						SendShopInfo(a_player, m_shopContainers[i].m_buyPriceMuliplier, m_shopContainers[i].m_sellPriceMuliplier);
-						return true;
-					}
+					a_player.m_shopContainer = this.m_shopContainers[i];
+					a_player.m_updateContainersFlag = true;
+					this.SendShopInfo(a_player, this.m_shopContainers[i].m_buyPriceMuliplier, this.m_shopContainers[i].m_sellPriceMuliplier);
+					return true;
 				}
 			}
 		}
@@ -1807,23 +1511,16 @@ public class LidServer : LidgrenPeer
 	private bool TryEnterVehicle(ServerPlayer a_player)
 	{
 		bool result = false;
-		if (a_player != null && a_player.CanEnterExitVehicle() && m_vehicles != null && null == a_player.GetVehicle() && a_player.m_onlineId != -1)
+		if (a_player != null && a_player.CanEnterExitVehicle() && this.m_vehicles != null && null == a_player.GetVehicle() && a_player.m_onlineId != -1)
 		{
-			Vector3 zero = Vector3.zero;
-			for (int i = 0; i < m_vehicles.Length; i++)
+			Vector3 vector = Vector3.zero;
+			for (int i = 0; i < this.m_vehicles.Length; i++)
 			{
-				zero = m_vehicles[i].transform.position;
-				float x = zero.x;
-				Vector3 position = a_player.GetPosition();
-				if (Mathf.Abs(x - position.x) < 2.5f)
+				vector = this.m_vehicles[i].transform.position;
+				if (Mathf.Abs(vector.x - a_player.GetPosition().x) < 2.5f && Mathf.Abs(vector.z - a_player.GetPosition().z) < 2.5f && this.m_vehicles[i].AddPassenger(a_player.m_onlineId))
 				{
-					float z = zero.z;
-					Vector3 position2 = a_player.GetPosition();
-					if (Mathf.Abs(z - position2.z) < 2.5f && m_vehicles[i].AddPassenger(a_player.m_onlineId))
-					{
-						result = a_player.SetVehicle(m_vehicles[i]);
-						break;
-					}
+					result = a_player.SetVehicle(this.m_vehicles[i]);
+					break;
 				}
 			}
 		}
@@ -1832,27 +1529,17 @@ public class LidServer : LidgrenPeer
 
 	public void Dig(Vector3 a_pos)
 	{
-		m_sql.RequestHiddenItems(a_pos);
-		for (int i = 0; i < m_freeWorldItems.Count; i++)
+		this.m_sql.RequestHiddenItems(a_pos);
+		for (int i = 0; i < this.m_freeWorldItems.Count; i++)
 		{
-			DatabaseItem databaseItem = m_freeWorldItems[i];
-			if (Items.IsContainer(databaseItem.type))
+			if (!Items.IsContainer(this.m_freeWorldItems[i].type) && Mathf.Abs(this.m_freeWorldItems[i].x - a_pos.x) < 0.5f && Mathf.Abs(this.m_freeWorldItems[i].y - a_pos.z) < 0.5f)
 			{
-				continue;
-			}
-			DatabaseItem databaseItem2 = m_freeWorldItems[i];
-			if (Mathf.Abs(databaseItem2.x - a_pos.x) < 0.5f)
-			{
-				DatabaseItem databaseItem3 = m_freeWorldItems[i];
-				if (Mathf.Abs(databaseItem3.y - a_pos.z) < 0.5f)
-				{
-					DatabaseItem a_item = m_freeWorldItems[i];
-					a_item.hidden = true;
-					a_item.flag = eDbAction.insert;
-					m_sql.SaveItem(a_item);
-					DeleteFreeWorldItem(i);
-					i--;
-				}
+				DatabaseItem a_item = this.m_freeWorldItems[i];
+				a_item.hidden = true;
+				a_item.flag = eDbAction.insert;
+				this.m_sql.SaveItem(a_item);
+				this.DeleteFreeWorldItem(i);
+				i--;
 			}
 		}
 	}
@@ -1945,79 +1632,58 @@ public class LidServer : LidgrenPeer
 	{
 		a_pos.y = 0f;
 		string key = a_pos.ToString();
-		ItemContainer itemContainer = (!m_freeWorldContainers.Contains(key)) ? null : ((ItemContainer)m_freeWorldContainers[key]);
+		ItemContainer itemContainer = (!this.m_freeWorldContainers.Contains(key)) ? null : ((ItemContainer)this.m_freeWorldContainers[key]);
 		if (itemContainer == null)
 		{
-			m_freeWorldItems.Add(new DatabaseItem(a_containerType, a_pos.x, a_pos.z));
-			itemContainer = new ItemContainer(4, 4, 6);
+			this.m_freeWorldItems.Add(new DatabaseItem(a_containerType, a_pos.x, a_pos.z, 1, false, 0, 0));
+			itemContainer = new ItemContainer(4, 4, 6, 0, null, null);
 			itemContainer.m_position = a_pos;
-			m_freeWorldContainers.Add(key, itemContainer);
+			this.m_freeWorldContainers.Add(key, itemContainer);
 		}
-		itemContainer.CollectItem(new DatabaseItem(a_newItemType, 0f, 0f, a_amount), true);
+		itemContainer.CollectItem(new DatabaseItem(a_newItemType, 0f, 0f, a_amount, false, 0, 0), true, default(Vector3));
 	}
 
 	public DatabaseItem PickupItem(ServerPlayer a_player, BrainBase a_npc)
 	{
-		DatabaseItem databaseItem = new DatabaseItem(0);
-		for (int i = 0; i < m_freeWorldItems.Count; i++)
+		DatabaseItem databaseItem = new DatabaseItem(0, 0f, 0f, 1, false, 0, 0);
+		for (int i = 0; i < this.m_freeWorldItems.Count; i++)
 		{
 			if (a_player != null)
 			{
-				DatabaseItem databaseItem2 = m_freeWorldItems[i];
-				float x = databaseItem2.x;
-				Vector3 position = a_player.GetPosition();
-				if (!(Mathf.Abs(x - position.x) < 1.1f))
+				if (Mathf.Abs(this.m_freeWorldItems[i].x - a_player.GetPosition().x) < 1.1f && Mathf.Abs(this.m_freeWorldItems[i].y - a_player.GetPosition().z) < 1.1f)
 				{
-					continue;
-				}
-				DatabaseItem databaseItem3 = m_freeWorldItems[i];
-				float y = databaseItem3.y;
-				Vector3 position2 = a_player.GetPosition();
-				if (!(Mathf.Abs(y - position2.z) < 1.1f)) //pickup radius
-				{
-					continue;
-				}
-				databaseItem = m_freeWorldItems[i];
-				if (Items.IsContainer(databaseItem.type))
-				{
-					string key = m_freeWorldItems[i].GetPos().ToString();
-					if (m_freeWorldContainers.Contains(key))
+					databaseItem = this.m_freeWorldItems[i];
+					if (Items.IsContainer(databaseItem.type))
 					{
-						a_player.m_freeWorldContainer = (ItemContainer)m_freeWorldContainers[key];
+						string key = this.m_freeWorldItems[i].GetPos().ToString();
+						if (this.m_freeWorldContainers.Contains(key))
+						{
+							a_player.m_freeWorldContainer = (ItemContainer)this.m_freeWorldContainers[key];
+						}
 					}
-				}
-				else if (a_player.m_inventory.CollectItem(databaseItem, true))
-				{
-					DeleteFreeWorldItem(i);
-					if (databaseItem.type == 254)
+					else if (a_player.m_inventory.CollectItem(databaseItem, true, default(Vector3)))
 					{
-						SendMoneyUpdate(a_player);
+						this.DeleteFreeWorldItem(i);
+						if (databaseItem.type == 254)
+						{
+							this.SendMoneyUpdate(a_player);
+						}
 					}
+					a_player.m_updateContainersFlag = true;
+					if (databaseItem.x < 1f)
+					{
+						this.SendPlayerInfo(a_player);
+					}
+					break;
 				}
-				a_player.m_updateContainersFlag = true;
-				if (databaseItem.x < 1f)
-				{
-					SendPlayerInfo(a_player);
-				}
-				break;
 			}
-			if (!(null != a_npc))
+			else if (null != a_npc)
 			{
-				continue;
-			}
-			float num = 1.6f;
-			DatabaseItem databaseItem4 = m_freeWorldItems[i];
-			float x2 = databaseItem4.x;
-			Vector3 position3 = a_npc.transform.position;
-			if (Mathf.Abs(x2 - position3.x) < num)
-			{
-				DatabaseItem databaseItem5 = m_freeWorldItems[i];
-				float y2 = databaseItem5.y;
-				Vector3 position4 = a_npc.transform.position;
-				if (Mathf.Abs(y2 - position4.z) < num)
+				float num = 1.6f;
+				if (Mathf.Abs(this.m_freeWorldItems[i].x - a_npc.transform.position.x) < num && Mathf.Abs(this.m_freeWorldItems[i].y - a_npc.transform.position.z) < num)
 				{
-					databaseItem = m_freeWorldItems[i];
-					DeleteFreeWorldItem(i);
+					databaseItem = this.m_freeWorldItems[i];
+					this.DeleteFreeWorldItem(i);
 					break;
 				}
 			}
@@ -2027,30 +1693,30 @@ public class LidServer : LidgrenPeer
 
 	public DatabaseItem GetRandomFreeWorldItem()
 	{
-		if (m_freeWorldItems.Count > 0)
+		if (this.m_freeWorldItems.Count > 0)
 		{
-			return m_freeWorldItems[UnityEngine.Random.Range(0, m_freeWorldItems.Count)];
+			return this.m_freeWorldItems[UnityEngine.Random.Range(0, this.m_freeWorldItems.Count)];
 		}
-		return new DatabaseItem(0);
+		return new DatabaseItem(0, 0f, 0f, 1, false, 0, 0);
 	}
 
 	public int GetPlayerCount()
 	{
-		return m_server.ConnectionsCount;
+		return this.m_server.ConnectionsCount;
 	}
 
 	public List<DatabaseItem> GetFreeWorldItems()
 	{
-		return m_freeWorldItems;
+		return this.m_freeWorldItems;
 	}
 
 	public ServerPlayer GetPlayerByTransform(Transform a_t)
 	{
-		for (int i = 0; i < m_players.Length; i++)
+		for (int i = 0; i < this.m_players.Length; i++)
 		{
-			if (m_players[i] != null && m_players[i].IsSpawned() && a_t == m_players[i].GetTransform())
+			if (this.m_players[i] != null && this.m_players[i].IsSpawned() && a_t == this.m_players[i].GetTransform())
 			{
-				return m_players[i];
+				return this.m_players[i];
 			}
 		}
 		return null;
@@ -2059,9 +1725,9 @@ public class LidServer : LidgrenPeer
 	public int GetFreeSlots()
 	{
 		int num = 0;
-		for (int i = 0; i < m_players.Length; i++)
+		for (int i = 0; i < this.m_players.Length; i++)
 		{
-			if (m_players[i] == null)
+			if (this.m_players[i] == null)
 			{
 				num++;
 			}
@@ -2071,23 +1737,11 @@ public class LidServer : LidgrenPeer
 
 	public ServerPlayer GetPlayerByPid(int a_pid)
 	{
-		for (int i = 0; i < m_players.Length; i++)
+		for (int i = 0; i < this.m_players.Length; i++)
 		{
-			if (m_players[i] != null && m_players[i].IsSpawned() && a_pid == m_players[i].m_pid)
+			if (this.m_players[i] != null && this.m_players[i].IsSpawned() && a_pid == this.m_players[i].m_pid)
 			{
-				return m_players[i];
-			}
-		}
-		return null;
-	}
-
-	public ServerPlayer GetPlayerByAid(ulong a_aid)
-	{
-		for (int i = 0; i < m_players.Length; i++)
-		{
-			if (m_players[i] != null && m_players[i].IsSpawned() && a_aid == m_players[i].m_accountId)
-			{
-				return m_players[i];
+				return this.m_players[i];
 			}
 		}
 		return null;
@@ -2104,13 +1758,14 @@ public class LidServer : LidgrenPeer
 		return null;
 	}
 
-	public ServerPlayer GetPlayersByName(string a_name)
+
+	public ServerPlayer GetPlayerByAid(ulong a_aid)
 	{
-		for (int i = 0; i < m_players.Length; i++)
+		for (int i = 0; i < this.m_players.Length; i++)
 		{
-			if (m_players[i] != null && m_players[i].IsSpawned() && a_name == m_players[i].m_name)
+			if (this.m_players[i] != null && this.m_players[i].IsSpawned() && a_aid == this.m_players[i].m_accountId)
 			{
-				return m_players[i];
+				return this.m_players[i];
 			}
 		}
 		return null;
@@ -2118,9 +1773,9 @@ public class LidServer : LidgrenPeer
 
 	public ServerPlayer GetPlayerByOnlineid(int a_oid)
 	{
-		if (-1 < a_oid && a_oid < m_players.Length && m_players[a_oid] != null && m_players[a_oid].IsSpawned())
+		if (-1 < a_oid && a_oid < this.m_players.Length && this.m_players[a_oid] != null && this.m_players[a_oid].IsSpawned())
 		{
-			return m_players[a_oid];
+			return this.m_players[a_oid];
 		}
 		return null;
 	}
@@ -2129,14 +1784,14 @@ public class LidServer : LidgrenPeer
 	{
 		float num = 9999999f;
 		ServerPlayer result = null;
-		for (int i = 0; i < m_players.Length; i++)
+		for (int i = 0; i < this.m_players.Length; i++)
 		{
-			if (m_players[i] != null && m_players[i].IsSpawned() && !m_players[i].IsDead())
+			if (this.m_players[i] != null && this.m_players[i].IsSpawned() && !this.m_players[i].IsDead())
 			{
-				float sqrMagnitude = (a_pos - m_players[i].GetPosition()).sqrMagnitude;
+				float sqrMagnitude = (a_pos - this.m_players[i].GetPosition()).sqrMagnitude;
 				if (sqrMagnitude < num)
 				{
-					result = m_players[i];
+					result = this.m_players[i];
 					num = sqrMagnitude;
 				}
 			}
@@ -2148,21 +1803,16 @@ public class LidServer : LidgrenPeer
 	{
 		float num = 9999999f;
 		DatabaseItem result = default(DatabaseItem);
-		for (int i = 0; i < m_freeWorldItems.Count; i++)
+		for (int i = 0; i < this.m_freeWorldItems.Count; i++)
 		{
-			if (a_petFoodOnly)
+			if (!a_petFoodOnly || Items.IsEatableForPet(this.m_freeWorldItems[i].type))
 			{
-				DatabaseItem databaseItem = m_freeWorldItems[i];
-				if (!Items.IsEatableForPet(databaseItem.type))
+				float sqrMagnitude = (a_pos - this.m_freeWorldItems[i].GetPos()).sqrMagnitude;
+				if (sqrMagnitude < num)
 				{
-					continue;
+					result = this.m_freeWorldItems[i];
+					num = sqrMagnitude;
 				}
-			}
-			float sqrMagnitude = (a_pos - m_freeWorldItems[i].GetPos()).sqrMagnitude;
-			if (sqrMagnitude < num)
-			{
-				result = m_freeWorldItems[i];
-				num = sqrMagnitude;
 			}
 		}
 		return result;
@@ -2171,9 +1821,9 @@ public class LidServer : LidgrenPeer
 	public int GetNearbyItemCount(Vector3 a_pos)
 	{
 		int num = 0;
-		for (int i = 0; i < m_freeWorldItems.Count; i++)
+		for (int i = 0; i < this.m_freeWorldItems.Count; i++)
 		{
-			float sqrMagnitude = (a_pos - m_freeWorldItems[i].GetPos()).sqrMagnitude;
+			float sqrMagnitude = (a_pos - this.m_freeWorldItems[i].GetPos()).sqrMagnitude;
 			if (sqrMagnitude < 1f)
 			{
 				num++;
@@ -2184,15 +1834,14 @@ public class LidServer : LidgrenPeer
 
 	public bool PartyContainsPid(int a_partyId, int a_pid)
 	{
-		if (m_partys.Contains(a_partyId))
+		if (this.m_partys.Contains(a_partyId))
 		{
-			List<DatabasePlayer> list = (List<DatabasePlayer>)m_partys[a_partyId];
+			List<DatabasePlayer> list = (List<DatabasePlayer>)this.m_partys[a_partyId];
 			if (list != null && 0 < list.Count)
 			{
 				for (int i = 0; i < list.Count; i++)
 				{
-					DatabasePlayer databasePlayer = list[i];
-					if (a_pid == databasePlayer.pid)
+					if (a_pid == list[i].pid)
 					{
 						return true;
 					}
@@ -2204,15 +1853,14 @@ public class LidServer : LidgrenPeer
 
 	public bool PartyContainsAid(int a_partyId, ulong a_aid)
 	{
-		if (m_partys.Contains(a_partyId))
+		if (this.m_partys.Contains(a_partyId))
 		{
-			List<DatabasePlayer> list = (List<DatabasePlayer>)m_partys[a_partyId];
+			List<DatabasePlayer> list = (List<DatabasePlayer>)this.m_partys[a_partyId];
 			if (list != null && 0 < list.Count)
 			{
 				for (int i = 0; i < list.Count; i++)
 				{
-					DatabasePlayer databasePlayer = list[i];
-					if (a_aid == databasePlayer.aid)
+					if (a_aid == list[i].aid)
 					{
 						return true;
 					}
@@ -2224,28 +1872,28 @@ public class LidServer : LidgrenPeer
 
 	public float GetDayLight()
 	{
-		float a_pip = 0f;
-		return Util.GetLightIntensity(m_dayNightCycle, out a_pip);
+		float num = 0f;
+		return Util.GetLightIntensity(this.m_dayNightCycle, out num);
 	}
 
 	public SQLThreadManager GetSql()
 	{
-		return m_sql;
+		return this.m_sql;
 	}
 
 	public void BroadcastStaticBuildingChange(ServerBuilding a_building)
 	{
-		NetOutgoingMessage netOutgoingMessage = m_server.CreateMessage();
+		NetOutgoingMessage netOutgoingMessage = this.m_server.CreateMessage();
 		netOutgoingMessage.Write(MessageIds.StaticBuildingUpdate);
-		AddBuildingToMsg(netOutgoingMessage, a_building, false);
-		m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.ReliableUnordered);
+		this.AddBuildingToMsg(netOutgoingMessage, a_building, false);
+		this.m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.ReliableUnordered);
 	}
 
-	public static void SendPartyUpdate(ServerPlayer a_player, DatabasePlayer[] a_party)
+	public void SendPartyUpdate(ServerPlayer a_player, DatabasePlayer[] a_party)
 	{
 		NetOutgoingMessage netOutgoingMessage = a_player.m_connection.Peer.CreateMessage();
 		netOutgoingMessage.Write(MessageIds.PartyUpdate);
-		netOutgoingMessage.Write((byte)((a_party != null) ? a_party.Length : 0));
+		netOutgoingMessage.Write((byte)((a_party == null) ? 0 : a_party.Length));
 		if (a_party != null)
 		{
 			for (int i = 0; i < a_party.Length; i++)
@@ -2258,7 +1906,7 @@ public class LidServer : LidgrenPeer
 		a_player.m_connection.SendMessage(netOutgoingMessage, NetDeliveryMethod.Unreliable, 0);
 	}
 
-	public static void SendPartyFeedback(ServerPlayer a_player, ePartyFeedback a_type, string a_otherPlayerName)
+	public void SendPartyFeedback(ServerPlayer a_player, ePartyFeedback a_type, string a_otherPlayerName)
 	{
 		if (15 < a_otherPlayerName.Length)
 		{
@@ -2271,7 +1919,7 @@ public class LidServer : LidgrenPeer
 		a_player.m_connection.SendMessage(netOutgoingMessage, NetDeliveryMethod.Unreliable, 0);
 	}
 
-	public static void SendRankUpdate(ServerPlayer a_player, int a_addedXp)
+	public void SendRankUpdate(ServerPlayer a_player, int a_addedXp)
 	{
 		NetOutgoingMessage netOutgoingMessage = a_player.m_connection.Peer.CreateMessage();
 		netOutgoingMessage.Write(MessageIds.RankUpdate);
@@ -2280,7 +1928,7 @@ public class LidServer : LidgrenPeer
 		a_player.m_connection.SendMessage(netOutgoingMessage, NetDeliveryMethod.Unreliable, 0);
 	}
 
-	public static void SendConditionUpdate(ServerPlayer a_player)
+	public void SendConditionUpdate(ServerPlayer a_player)
 	{
 		NetOutgoingMessage netOutgoingMessage = a_player.m_connection.Peer.CreateMessage();
 		netOutgoingMessage.Write(MessageIds.ConditionUpdate);
@@ -2288,7 +1936,7 @@ public class LidServer : LidgrenPeer
 		a_player.m_connection.SendMessage(netOutgoingMessage, NetDeliveryMethod.Unreliable, 0);
 	}
 
-	public static void SendMoneyUpdate(ServerPlayer a_player)
+	public void SendMoneyUpdate(ServerPlayer a_player)
 	{
 		NetOutgoingMessage netOutgoingMessage = a_player.m_connection.Peer.CreateMessage();
 		netOutgoingMessage.Write(MessageIds.MoneyUpdate);
@@ -2355,42 +2003,40 @@ public class LidServer : LidgrenPeer
 
 	public void SendNotification(string a_text)
 	{
-		NetOutgoingMessage netOutgoingMessage = m_server.CreateMessage();
+		NetOutgoingMessage netOutgoingMessage = this.m_server.CreateMessage();
 		netOutgoingMessage.Write(MessageIds.Notification);
 		netOutgoingMessage.Write(a_text);
-		m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.Unreliable);
+		this.m_server.SendToAll(netOutgoingMessage, NetDeliveryMethod.Unreliable);
 	}
 
 	public SpawnPos[] GetSpawnPoints()
 	{
-		return m_spawnPoints;
+		return this.m_spawnPoints;
 	}
 
 	public ServerTutorial GetTutorial()
 	{
-		return m_tutorial;
+		return this.m_tutorial;
 	}
 
 	public bool IsInSpecialArea(Vector3 a_pos, eAreaType a_area)
 	{
-		SpecialArea[] specialAreas = m_specialAreas;
-		foreach (SpecialArea specialArea in specialAreas)
+		foreach (SpecialArea specialArea in this.m_specialAreas)
 		{
-			if (!(null != specialArea) || a_area != specialArea.m_type)
+			if (null != specialArea && a_area == specialArea.m_type)
 			{
-				continue;
-			}
-			Vector3 vector = specialArea.transform.position - a_pos;
-			if (specialArea.m_type == eAreaType.noPvp)
-			{
-				if (Mathf.Abs(vector.x) < specialArea.m_radius && Mathf.Abs(vector.z) < specialArea.m_radius)
+				Vector3 vector = specialArea.transform.position - a_pos;
+				if (specialArea.m_type == eAreaType.noPvp)
+				{
+					if (Mathf.Abs(vector.x) < specialArea.m_radius && Mathf.Abs(vector.z) < specialArea.m_radius)
+					{
+						return true;
+					}
+				}
+				else if (vector.sqrMagnitude < specialArea.m_radius * specialArea.m_radius)
 				{
 					return true;
 				}
-			}
-			else if (vector.sqrMagnitude < specialArea.m_radius * specialArea.m_radius)
-			{
-				return true;
 			}
 		}
 		return false;
@@ -2401,13 +2047,13 @@ public class LidServer : LidgrenPeer
 		bool result = false;
 		float num = 9999999f;
 		int num2 = -1;
-		Vector3 zero = Vector3.zero;
-		for (int i = 0; i < m_vehicles.Length; i++)
+		Vector3 a = Vector3.zero;
+		for (int i = 0; i < this.m_vehicles.Length; i++)
 		{
-			if (null != m_vehicles[i] && !m_vehicles[i].IsDead())
+			if (null != this.m_vehicles[i] && !this.m_vehicles[i].IsDead())
 			{
-				zero = m_vehicles[i].transform.position;
-				float sqrMagnitude = (zero - a_distCheckPos).sqrMagnitude;
+				a = this.m_vehicles[i].transform.position;
+				float sqrMagnitude = (a - a_distCheckPos).sqrMagnitude;
 				if (sqrMagnitude < num)
 				{
 					num2 = i;
@@ -2417,7 +2063,7 @@ public class LidServer : LidgrenPeer
 		}
 		if (10f > num)
 		{
-			m_vehicles[num2].ChangeHealthBy(5f);
+			this.m_vehicles[num2].ChangeHealthBy(5f);
 			result = true;
 		}
 		return result;
@@ -2425,55 +2071,122 @@ public class LidServer : LidgrenPeer
 
 	public void DealExplosionDamage(Vector3 a_pos, float a_damage, float a_radius)
 	{
-		for (int i = 0; i < m_players.Length; i++)
+		for (int i = 0; i < this.m_players.Length; i++)
 		{
-			if (m_players[i] != null && m_players[i].IsSpawned() && !m_players[i].IsDead())
+			if (this.m_players[i] != null && this.m_players[i].IsSpawned() && !this.m_players[i].IsDead())
 			{
-				float sqrMagnitude = (a_pos - m_players[i].GetPosition()).sqrMagnitude;
+				float sqrMagnitude = (a_pos - this.m_players[i].GetPosition()).sqrMagnitude;
 				if (sqrMagnitude < a_radius * a_radius)
 				{
-					float a_delta = (0f - a_damage) * (1f - sqrMagnitude / (a_radius * a_radius));
-					m_players[i].ChangeHealthBy(a_delta);
+					float a_delta = -a_damage * (1f - sqrMagnitude / (a_radius * a_radius));
+					this.m_players[i].ChangeHealthBy(a_delta);
 				}
 			}
 		}
-		for (int j = 0; j < m_buildingMan.m_buildings.Count; j++)
+		for (int j = 0; j < this.m_buildingMan.m_buildings.Count; j++)
 		{
-			if (null != m_buildingMan.m_buildings[j])
+			if (null != this.m_buildingMan.m_buildings[j])
 			{
-				float sqrMagnitude2 = (a_pos - m_buildingMan.m_buildings[j].transform.position).sqrMagnitude;
+				float sqrMagnitude2 = (a_pos - this.m_buildingMan.m_buildings[j].transform.position).sqrMagnitude;
 				if (sqrMagnitude2 < a_radius * a_radius)
 				{
-					float a_dif = (0f - a_damage) * (1f - sqrMagnitude2 / (a_radius * a_radius));
-					m_buildingMan.m_buildings[j].ChangeHealthBy(a_dif);
-					m_buildingMan.m_buildings[j].SetAggressor(base.transform);
+					float a_dif = -a_damage * (1f - sqrMagnitude2 / (a_radius * a_radius));
+					this.m_buildingMan.m_buildings[j].ChangeHealthBy(a_dif);
+					this.m_buildingMan.m_buildings[j].SetAggressor(base.transform);
 				}
 			}
 		}
-		for (int k = 0; k < m_npcs.Length; k++)
+		for (int k = 0; k < this.m_npcs.Length; k++)
 		{
-			if (null != m_npcs[k])
+			if (null != this.m_npcs[k])
 			{
-				float sqrMagnitude3 = (a_pos - m_npcs[k].transform.position).sqrMagnitude;
+				float sqrMagnitude3 = (a_pos - this.m_npcs[k].transform.position).sqrMagnitude;
 				if (sqrMagnitude3 < a_radius * a_radius)
 				{
-					float a_delta2 = (0f - a_damage) * (1f - sqrMagnitude3 / (a_radius * a_radius));
-					m_npcs[k].ChangeHealthBy(a_delta2);
+					float a_delta2 = -a_damage * (1f - sqrMagnitude3 / (a_radius * a_radius));
+					this.m_npcs[k].ChangeHealthBy(a_delta2);
 				}
 			}
 		}
-		if (m_vehicles == null)
+		if (this.m_vehicles != null)
 		{
-			return;
-		}
-		for (int l = 0; l < m_vehicles.Length; l++)
-		{
-			float sqrMagnitude4 = (a_pos - m_vehicles[l].transform.position).sqrMagnitude;
-			if (sqrMagnitude4 < a_radius * a_radius)
+			for (int l = 0; l < this.m_vehicles.Length; l++)
 			{
-				float a_delta3 = (0f - a_damage) * (1f - sqrMagnitude4 / (a_radius * a_radius));
-				m_vehicles[l].ChangeHealthBy(a_delta3);
+				float sqrMagnitude4 = (a_pos - this.m_vehicles[l].transform.position).sqrMagnitude;
+				if (sqrMagnitude4 < a_radius * a_radius)
+				{
+					float a_delta3 = -a_damage * (1f - sqrMagnitude4 / (a_radius * a_radius));
+					this.m_vehicles[l].ChangeHealthBy(a_delta3);
+				}
 			}
 		}
 	}
+
+	private const float c_updateXradius = 22f;
+
+	private const float c_updateZradius = 19f;
+
+	private const float c_playerPickupRadius = 1.1f;
+
+	private const float c_playerVehicleRadius = 2.5f;
+
+	public GameObject m_controlledCharPrefab;
+
+	public float m_updateIntervall = 0.2f;
+
+	public float m_playerDbWriteIntervall = 10.5f;
+
+	public float m_serverRestartTime = 86399f;
+
+	public bool m_shutdownIfEmpty;
+
+	private int m_restartMinutes = 5;
+
+	private int m_maxPartyId = 1;
+
+	private float m_dayNightCycleSpeed = 0.001f;
+
+	private float m_nextPlayerDbWriteTime;
+
+	private float m_nextServerListUpdate = 5f;
+
+	private float m_nextItemUpdate = 5f;
+
+	private NetServer m_server;
+
+	private SQLThreadManager m_sql;
+
+	private BuildingManager m_buildingMan;
+
+	private MissionManager m_missionMan;
+
+	private string m_serverName = string.Empty;
+
+	private bool m_inited;
+
+	public ServerPlayer[] m_players = new ServerPlayer[50];
+
+	public ServerNpc[] m_npcs;
+
+	public ServerVehicle[] m_vehicles;
+
+	public ShopContainer[] m_shopContainers;
+
+	public ServerBuilding[] m_staticBuildings;
+
+	public SpawnPos[] m_spawnPoints;
+
+	public SpecialArea[] m_specialAreas;
+
+	public RepairingNpc[] m_repairNpcs;
+
+	public ServerTutorial m_tutorial;
+
+	private List<DatabaseItem> m_freeWorldItems = new List<DatabaseItem>();
+
+	private Hashtable m_freeWorldContainers = new Hashtable();
+
+	private Hashtable m_partys = new Hashtable();
+
+	private float m_dayNightCycle;
 }

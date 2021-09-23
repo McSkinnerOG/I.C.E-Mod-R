@@ -1,27 +1,29 @@
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class LanguageSetter : MonoBehaviour
 {
-	public Text m_curLngTxt;
+	public LanguageSetter()
+	{
+	}
 
 	private void Awake()
 	{
 		string @string = PlayerPrefs.GetString("prefLang", "English");
-		SetLanguage(@string);
+		this.SetLanguage(@string);
 	}
 
 	public void SetLanguage(string a_lng)
 	{
 		LNG.Init(a_lng);
 		PlayerPrefs.SetString("prefLang", a_lng);
-		if (null != m_curLngTxt)
+		if (null != this.m_curLngTxt)
 		{
-			m_curLngTxt.text = a_lng;
+			this.m_curLngTxt.text = a_lng;
 		}
-		TextLNG[] array = Object.FindObjectsOfType<TextLNG>();
-		TextLNG[] array2 = array;
-		foreach (TextLNG textLNG in array2)
+		TextLNG[] array = UnityEngine.Object.FindObjectsOfType<TextLNG>();
+		foreach (TextLNG textLNG in array)
 		{
 			if (null != textLNG)
 			{
@@ -29,4 +31,6 @@ public class LanguageSetter : MonoBehaviour
 			}
 		}
 	}
+
+	public Text m_curLngTxt;
 }

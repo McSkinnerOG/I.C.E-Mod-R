@@ -1,8 +1,53 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public class Bird : MonoBehaviour
 {
+	public Bird()
+	{
+	}
+
+	private void Start()
+	{
+		this.anim = base.GetComponent<Animator>();
+		this.angleX = (float)UnityEngine.Random.Range(0, 360);
+		this.angleY = (float)UnityEngine.Random.Range(0, 360);
+		this.angleZ = (float)UnityEngine.Random.Range(0, 360);
+		this.lastPosition = this.GetNewPos();
+	}
+
+	private void OnAnimatorMove()
+	{
+		if (this.anim.GetCurrentAnimatorStateInfo(0).IsTag("NewAnim"))
+		{
+			if (this.canChangeAnim)
+			{
+				this.anim.SetInteger("AnimNum", UnityEngine.Random.Range(0, this.animCount + 1));
+				this.canChangeAnim = false;
+				Debug.Log("Bird anim: " + this.anim.GetInteger("AnimNum"));
+			}
+		}
+		else
+		{
+			this.canChangeAnim = true;
+		}
+		Vector3 newPos = this.GetNewPos();
+		base.transform.position += newPos - this.lastPosition;
+		this.lastPosition = newPos;
+		this.angleX = Mathf.MoveTowardsAngle(this.angleX, this.angleX + this.speedX * Time.deltaTime, this.speedX * Time.deltaTime);
+		this.angleY = Mathf.MoveTowardsAngle(this.angleY, this.angleY + this.speedY * Time.deltaTime, this.speedY * Time.deltaTime);
+		this.angleZ = Mathf.MoveTowardsAngle(this.angleZ, this.angleZ + this.speedZ * Time.deltaTime, this.speedZ * Time.deltaTime);
+	}
+
+	private Vector3 GetNewPos()
+	{
+		Vector3 result;
+		result.x = Mathf.Sin(this.angleX * 0.017453292f) * this.amplitudeX;
+		result.y = Mathf.Sin(this.angleY * 0.017453292f) * this.amplitudeY;
+		result.z = Mathf.Sin(this.angleZ * 0.017453292f) * this.amplitudeZ;
+		return result;
+	}
+
 	public int animCount = 2;
 
 	public float speedX;
@@ -28,45 +73,4 @@ public class Bird : MonoBehaviour
 	private float angleZ;
 
 	private Vector3 lastPosition;
-
-	private void Start()
-	{
-		anim = GetComponent<Animator>();
-		angleX = UnityEngine.Random.Range(0, 360);
-		angleY = UnityEngine.Random.Range(0, 360);
-		angleZ = UnityEngine.Random.Range(0, 360);
-		lastPosition = GetNewPos();
-	}
-
-	private void OnAnimatorMove()
-	{
-		if (anim.GetCurrentAnimatorStateInfo(0).IsTag("NewAnim"))
-		{
-			if (canChangeAnim)
-			{
-				anim.SetInteger("AnimNum", UnityEngine.Random.Range(0, animCount + 1));
-				canChangeAnim = false;
-				Debug.Log("Bird anim: " + anim.GetInteger("AnimNum"));
-			}
-		}
-		else
-		{
-			canChangeAnim = true;
-		}
-		Vector3 newPos = GetNewPos();
-		base.transform.position += newPos - lastPosition;
-		lastPosition = newPos;
-		angleX = Mathf.MoveTowardsAngle(angleX, angleX + speedX * Time.deltaTime, speedX * Time.deltaTime);
-		angleY = Mathf.MoveTowardsAngle(angleY, angleY + speedY * Time.deltaTime, speedY * Time.deltaTime);
-		angleZ = Mathf.MoveTowardsAngle(angleZ, angleZ + speedZ * Time.deltaTime, speedZ * Time.deltaTime);
-	}
-
-	private Vector3 GetNewPos()
-	{
-		Vector3 result = default(Vector3);
-		result.x = Mathf.Sin(angleX * ((float)Math.PI / 180f)) * amplitudeX;
-		result.y = Mathf.Sin(angleY * ((float)Math.PI / 180f)) * amplitudeY;
-		result.z = Mathf.Sin(angleZ * ((float)Math.PI / 180f)) * amplitudeZ;
-		return result;
-	}
 }

@@ -1,8 +1,53 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public class RiseAndDie : MonoBehaviour
 {
+	public RiseAndDie()
+	{
+	}
+
+	private void Start()
+	{
+		this.m_startPos = base.transform.localPosition;
+		if (Vector3.zero == this.m_endPos)
+		{
+			this.m_endPos = base.transform.localPosition + this.m_riseVector;
+		}
+		this.m_renderers = base.GetComponentsInChildren<Renderer>();
+	}
+
+	public void SetEndByCollision(Vector3 a_collisionStartPos)
+	{
+		RaycastHit raycastHit;
+		if (Physics.Raycast(a_collisionStartPos, this.m_riseVector, out raycastHit))
+		{
+			this.m_riseVector = this.m_riseVector.normalized * (raycastHit.point - base.transform.localPosition).magnitude;
+			this.m_endPos = base.transform.localPosition + this.m_riseVector;
+		}
+	}
+
+	private void Update()
+	{
+		this.m_myTime += Time.deltaTime * Time.timeScale;
+		this.m_progress = this.m_myTime / this.m_riseTime;
+		float t = Mathf.Sin(1.5707964f * this.m_progress);
+		base.transform.localPosition = Vector3.Lerp(this.m_startPos, this.m_endPos, t);
+		foreach (Renderer renderer in this.m_renderers)
+		{
+			if (renderer.material.HasProperty("_Color"))
+			{
+				Color color = renderer.material.color;
+				color.a = 1f - (this.m_progress - this.m_alphaFadeOutStart) / (1f - this.m_alphaFadeOutStart);
+				renderer.material.color = color;
+			}
+		}
+		if (this.m_progress >= 1f)
+		{
+			UnityEngine.Object.Destroy(base.gameObject);
+		}
+	}
+
 	public Vector3 m_riseVector = new Vector3(0f, 9f, 0f);
 
 	public float m_riseTime = 2f;
@@ -18,46 +63,4 @@ public class RiseAndDie : MonoBehaviour
 	private float m_progress;
 
 	private Renderer[] m_renderers;
-
-	private void Start()
-	{
-		m_startPos = base.transform.localPosition;
-		if (Vector3.zero == m_endPos)
-		{
-			m_endPos = base.transform.localPosition + m_riseVector;
-		}
-		m_renderers = GetComponentsInChildren<Renderer>();
-	}
-
-	public void SetEndByCollision(Vector3 a_collisionStartPos)
-	{
-		RaycastHit hitInfo;
-		if (Physics.Raycast(a_collisionStartPos, m_riseVector, out hitInfo))
-		{
-			m_riseVector = m_riseVector.normalized * (hitInfo.point - base.transform.localPosition).magnitude;
-			m_endPos = base.transform.localPosition + m_riseVector;
-		}
-	}
-
-	private void Update()
-	{
-		m_myTime += Time.deltaTime * Time.timeScale;
-		m_progress = m_myTime / m_riseTime;
-		float t = Mathf.Sin((float)Math.PI / 2f * m_progress);
-		base.transform.localPosition = Vector3.Lerp(m_startPos, m_endPos, t);
-		Renderer[] renderers = m_renderers;
-		foreach (Renderer renderer in renderers)
-		{
-			if (renderer.material.HasProperty("_Color"))
-			{
-				Color color = renderer.material.color;
-				color.a = 1f - (m_progress - m_alphaFadeOutStart) / (1f - m_alphaFadeOutStart);
-				renderer.material.color = color;
-			}
-		}
-		if (m_progress >= 1f)
-		{
-			UnityEngine.Object.Destroy(base.gameObject);
-		}
-	}
 }

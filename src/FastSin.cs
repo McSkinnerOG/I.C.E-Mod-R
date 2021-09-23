@@ -1,9 +1,32 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public class FastSin : MonoBehaviour
 {
-	private static float[] m_sinTable = new float[361]
+	public FastSin()
+	{
+	}
+
+	// Note: this type is marked as 'beforefieldinit'.
+	static FastSin()
+	{
+	}
+
+	public static float Get(float a_rad)
+	{
+		while (a_rad < 0f)
+		{
+			a_rad += FastSin.m_twopi;
+		}
+		while (a_rad > FastSin.m_twopi)
+		{
+			a_rad -= FastSin.m_twopi;
+		}
+		int num = (int)(a_rad / FastSin.m_twopi * 360f);
+		return FastSin.m_sinTable[num];
+	}
+
+	private static float[] m_sinTable = new float[]
 	{
 		0f,
 		0.01745241f,
@@ -203,7 +226,7 @@ public class FastSin : MonoBehaviour
 		-0.2588191f,
 		-0.2756375f,
 		-0.2923718f,
-		-305f / 987f,
+		-0.3090172f,
 		-0.3255683f,
 		-0.3420202f,
 		-0.3583681f,
@@ -368,19 +391,5 @@ public class FastSin : MonoBehaviour
 		0f
 	};
 
-	private static float m_twopi = (float)Math.PI * 2f;
-
-	public static float Get(float a_rad)
-	{
-		while (a_rad < 0f)
-		{
-			a_rad += m_twopi;
-		}
-		while (a_rad > m_twopi)
-		{
-			a_rad -= m_twopi;
-		}
-		int num = (int)(a_rad / m_twopi * 360f);
-		return m_sinTable[num];
-	}
+	private static float m_twopi = 6.2831855f;
 }

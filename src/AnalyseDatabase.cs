@@ -1,26 +1,21 @@
-using Mono.Data.SqliteClient;
+﻿using System;
 using System.Data;
+using Mono.Data.SqliteClient;
 using UnityEngine;
 
 public class AnalyseDatabase : MonoBehaviour
 {
-	public GameObject m_prefab;
-
-	public bool m_createFakePlayers;
-
-	private IDbConnection m_sqlConnection;
-
-	private IDbCommand m_sqlCommand;
-
-	private IDataReader m_sqlReader;
+	public AnalyseDatabase()
+	{
+	}
 
 	private void Start()
 	{
-		m_sqlConnection = new SqliteConnection("URI=file:immune.db");
-		m_sqlConnection.Close();
-		m_sqlConnection.Open();
-		m_sqlCommand = m_sqlConnection.CreateCommand();
-		LoadData();
+		this.m_sqlConnection = new SqliteConnection("URI=file:immune.db");
+		this.m_sqlConnection.Close();
+		this.m_sqlConnection.Open();
+		this.m_sqlCommand = this.m_sqlConnection.CreateCommand();
+		this.LoadData();
 	}
 
 	private void LoadData()
@@ -32,10 +27,10 @@ public class AnalyseDatabase : MonoBehaviour
 		int num5 = 0;
 		float num6 = 0f;
 		float num7 = 0f;
-		using (IDbTransaction dbTransaction = m_sqlConnection.BeginTransaction())
+		using (IDbTransaction dbTransaction = this.m_sqlConnection.BeginTransaction())
 		{
-			m_sqlCommand.CommandText = "SELECT aid, pid, x, y, health, energy, karma, xp, condition, gold FROM player;";
-			using (IDataReader dataReader = m_sqlCommand.ExecuteReader())
+			this.m_sqlCommand.CommandText = "SELECT aid, pid, x, y, health, energy, karma, xp, condition, gold FROM player;";
+			using (IDataReader dataReader = this.m_sqlCommand.ExecuteReader())
 			{
 				while (dataReader.Read())
 				{
@@ -69,9 +64,9 @@ public class AnalyseDatabase : MonoBehaviour
 					}
 					num6 += (float)a_player.karma;
 					num7 += (float)a_player.gold;
-					if (m_createFakePlayers)
+					if (this.m_createFakePlayers)
 					{
-						CreateFakePlayer(a_player);
+						this.CreateFakePlayer(a_player);
 					}
 				}
 				dataReader.Close();
@@ -81,14 +76,44 @@ public class AnalyseDatabase : MonoBehaviour
 			num3 = (int)((float)num3 / (float)num * 100f);
 			num4 = (int)((float)num4 / (float)num * 100f);
 			num5 = (int)((float)num5 / (float)num * 100f);
-			Debug.Log("players: " + num + "\nplayersWithNoXP: " + num2 + "%\nplayersOnTutorialIsland: " + num3 + "%\nplayersThatMovedSomewhat: " + num4 + "%\nplayersWithOver1000XP: " + num5 + "%\naverageKarma: " + num6 / (float)num + "\naverageGold: " + num7 / (float)num);
+			Debug.Log(string.Concat(new object[]
+			{
+				"players: ",
+				num,
+				"\nplayersWithNoXP: ",
+				num2,
+				"%\nplayersOnTutorialIsland: ",
+				num3,
+				"%\nplayersThatMovedSomewhat: ",
+				num4,
+				"%\nplayersWithOver1000XP: ",
+				num5,
+				"%\naverageKarma: ",
+				num6 / (float)num,
+				"\naverageGold: ",
+				num7 / (float)num
+			}));
 		}
 	}
 
 	private void CreateFakePlayer(DatabasePlayer a_player)
 	{
-		string text = "HP:  " + a_player.health + "\nEP:  " + a_player.energy + "\nKA:  " + a_player.karma + "\nXP:  " + a_player.xp + "\nCO:  " + a_player.condition + "\nGO:  " + a_player.gold;
-		GameObject gameObject = (GameObject)Object.Instantiate(m_prefab);
+		string text = string.Concat(new object[]
+		{
+			"HP:  ",
+			a_player.health,
+			"\nEP:  ",
+			a_player.energy,
+			"\nKA:  ",
+			a_player.karma,
+			"\nXP:  ",
+			a_player.xp,
+			"\nCO:  ",
+			a_player.condition,
+			"\nGO:  ",
+			a_player.gold
+		});
+		GameObject gameObject = (GameObject)UnityEngine.Object.Instantiate(this.m_prefab);
 		gameObject.transform.position = new Vector3(a_player.x, 0.3f, a_player.y);
 		TextMesh componentInChildren = gameObject.GetComponentInChildren<TextMesh>();
 		if (null != componentInChildren)
@@ -96,4 +121,14 @@ public class AnalyseDatabase : MonoBehaviour
 			componentInChildren.text = text;
 		}
 	}
+
+	public GameObject m_prefab;
+
+	public bool m_createFakePlayers;
+
+	private IDbConnection m_sqlConnection;
+
+	private IDbCommand m_sqlCommand;
+
+	private IDataReader m_sqlReader;
 }

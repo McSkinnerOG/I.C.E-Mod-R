@@ -1,6 +1,6 @@
-using Lidgren.Network;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Lidgren.Network;
 using UnityEngine;
 
 public class LidgrenPeer : MonoBehaviour
@@ -34,44 +34,44 @@ public class LidgrenPeer : MonoBehaviour
 		{
 			switch (netIncomingMessage.MessageType)
 			{
-			case NetIncomingMessageType.Data:
-			{
-				byte b = netIncomingMessage.ReadByte();
-				Action<NetIncomingMessage> value = null;
-				if (messageHandlers.TryGetValue(b, out value))
-				{
-					value(netIncomingMessage);
-				}
-				else
-				{
-					Debug.LogWarning("No handler for message id " + b);
-				}
-				break;
-			}
-			case NetIncomingMessageType.StatusChanged:
-				switch (netIncomingMessage.SenderConnection.Status)
-				{
-				case NetConnectionStatus.Connected:
-					if (this.Connected != null)
+				case NetIncomingMessageType.Data:
 					{
-						this.Connected(netIncomingMessage);
+						byte b = netIncomingMessage.ReadByte();
+						Action<NetIncomingMessage> value = null;
+						if (messageHandlers.TryGetValue(b, out value))
+						{
+							value(netIncomingMessage);
+						}
+						else
+						{
+							Debug.LogWarning("No handler for message id " + b);
+						}
+						break;
 					}
-					break;
-				case NetConnectionStatus.Disconnected:
-					if (this.Disconnected != null)
+				case NetIncomingMessageType.StatusChanged:
+					switch (netIncomingMessage.SenderConnection.Status)
 					{
-						this.Disconnected(netIncomingMessage);
+						case NetConnectionStatus.Connected:
+							if (this.Connected != null)
+							{
+								this.Connected(netIncomingMessage);
+							}
+							break;
+						case NetConnectionStatus.Disconnected:
+							if (this.Disconnected != null)
+							{
+								this.Disconnected(netIncomingMessage);
+							}
+							break;
 					}
+					Debug.Log(string.Concat("Status on ", netIncomingMessage.SenderConnection, " changed to ", netIncomingMessage.SenderConnection.Status));
 					break;
-				}
-				Debug.Log(string.Concat("Status on ", netIncomingMessage.SenderConnection, " changed to ", netIncomingMessage.SenderConnection.Status));
-				break;
-			case NetIncomingMessageType.VerboseDebugMessage:
-			case NetIncomingMessageType.DebugMessage:
-			case NetIncomingMessageType.WarningMessage:
-			case NetIncomingMessageType.ErrorMessage:
-				Debug.Log("Lidgren: " + netIncomingMessage.ReadString());
-				break;
+				case NetIncomingMessageType.VerboseDebugMessage:
+				case NetIncomingMessageType.DebugMessage:
+				case NetIncomingMessageType.WarningMessage:
+				case NetIncomingMessageType.ErrorMessage:
+					Debug.Log("Lidgren: " + netIncomingMessage.ReadString());
+					break;
 			}
 			peer.Recycle(netIncomingMessage);
 		}

@@ -1,17 +1,22 @@
+﻿using System;
 using UnityEngine;
 
 public class TheOneAndOnly : MonoBehaviour
 {
+	public TheOneAndOnly()
+	{
+	}
+
 	private void Awake()
 	{
-		TheOneAndOnly[] array = (TheOneAndOnly[])Object.FindObjectsOfType(typeof(TheOneAndOnly));
+		TheOneAndOnly[] array = (TheOneAndOnly[])UnityEngine.Object.FindObjectsOfType(typeof(TheOneAndOnly));
 		if (1 < array.Length)
 		{
-			Object.Destroy(base.gameObject);
+			UnityEngine.Object.Destroy(base.gameObject);
 		}
 		else
 		{
-			Object.DontDestroyOnLoad(base.gameObject);
+			UnityEngine.Object.DontDestroyOnLoad(base.gameObject);
 		}
 	}
 }

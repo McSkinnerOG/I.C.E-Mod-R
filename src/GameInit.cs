@@ -1,11 +1,16 @@
+﻿using System;
 using UnityEngine;
 
 public class GameInit : MonoBehaviour
 {
-	public float m_timeScale = 1f;
+	public GameInit()
+	{
+	}
 
 	private void Start()
 	{
-		Time.timeScale = m_timeScale;
+		Time.timeScale = this.m_timeScale;
 	}
+
+	public float m_timeScale = 1f;
 }

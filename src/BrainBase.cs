@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class BrainBase : MonoBehaviour
 {
@@ -118,24 +118,24 @@ public class BrainBase : MonoBehaviour
 		float result = 0f;
 		switch (state)
 		{
-		case eBrainBaseState.hungry:
-			result = m_hunger;
-			break;
-		case eBrainBaseState.thirsty:
-			result = m_thirst;
-			break;
-		case eBrainBaseState.fatigued:
-			result = m_fatigue;
-			break;
-		case eBrainBaseState.injured:
-			result = m_injury;
-			break;
-		case eBrainBaseState.stressed:
-			result = m_stress;
-			break;
-		case eBrainBaseState.lonely:
-			result = m_loneliness;
-			break;
+			case eBrainBaseState.hungry:
+				result = m_hunger;
+				break;
+			case eBrainBaseState.thirsty:
+				result = m_thirst;
+				break;
+			case eBrainBaseState.fatigued:
+				result = m_fatigue;
+				break;
+			case eBrainBaseState.injured:
+				result = m_injury;
+				break;
+			case eBrainBaseState.stressed:
+				result = m_stress;
+				break;
+			case eBrainBaseState.lonely:
+				result = m_loneliness;
+				break;
 		}
 		return result;
 	}
@@ -145,30 +145,30 @@ public class BrainBase : MonoBehaviour
 		float result = -1f;
 		switch (state)
 		{
-		case eBrainBaseState.hungry:
-			m_hunger = Mathf.Clamp(m_hunger + delta, 0f, 1f);
-			result = m_hunger;
-			break;
-		case eBrainBaseState.thirsty:
-			m_thirst = Mathf.Clamp(m_thirst + delta, 0f, 1f);
-			result = m_thirst;
-			break;
-		case eBrainBaseState.fatigued:
-			m_fatigue = Mathf.Clamp(m_fatigue + delta, 0f, 1f);
-			result = m_fatigue;
-			break;
-		case eBrainBaseState.injured:
-			m_injury = Mathf.Clamp(m_injury + delta, 0f, 1f);
-			result = m_injury;
-			break;
-		case eBrainBaseState.stressed:
-			m_stress = Mathf.Clamp(m_stress + delta, 0f, 1f);
-			result = m_stress;
-			break;
-		case eBrainBaseState.lonely:
-			m_loneliness = Mathf.Clamp(m_loneliness + delta, 0f, 1f);
-			result = m_loneliness;
-			break;
+			case eBrainBaseState.hungry:
+				m_hunger = Mathf.Clamp(m_hunger + delta, 0f, 1f);
+				result = m_hunger;
+				break;
+			case eBrainBaseState.thirsty:
+				m_thirst = Mathf.Clamp(m_thirst + delta, 0f, 1f);
+				result = m_thirst;
+				break;
+			case eBrainBaseState.fatigued:
+				m_fatigue = Mathf.Clamp(m_fatigue + delta, 0f, 1f);
+				result = m_fatigue;
+				break;
+			case eBrainBaseState.injured:
+				m_injury = Mathf.Clamp(m_injury + delta, 0f, 1f);
+				result = m_injury;
+				break;
+			case eBrainBaseState.stressed:
+				m_stress = Mathf.Clamp(m_stress + delta, 0f, 1f);
+				result = m_stress;
+				break;
+			case eBrainBaseState.lonely:
+				m_loneliness = Mathf.Clamp(m_loneliness + delta, 0f, 1f);
+				result = m_loneliness;
+				break;
 		}
 		return result;
 	}
@@ -177,24 +177,24 @@ public class BrainBase : MonoBehaviour
 	{
 		switch (state)
 		{
-		case eBrainBaseState.hungry:
-			m_hungerDurability = durInSec;
-			break;
-		case eBrainBaseState.thirsty:
-			m_thirstDurability = durInSec;
-			break;
-		case eBrainBaseState.fatigued:
-			m_fatigueDurability = durInSec;
-			break;
-		case eBrainBaseState.injured:
-			m_injuryDurability = durInSec;
-			break;
-		case eBrainBaseState.stressed:
-			m_stressDurability = durInSec;
-			break;
-		case eBrainBaseState.lonely:
-			m_lonelinessDurability = durInSec;
-			break;
+			case eBrainBaseState.hungry:
+				m_hungerDurability = durInSec;
+				break;
+			case eBrainBaseState.thirsty:
+				m_thirstDurability = durInSec;
+				break;
+			case eBrainBaseState.fatigued:
+				m_fatigueDurability = durInSec;
+				break;
+			case eBrainBaseState.injured:
+				m_injuryDurability = durInSec;
+				break;
+			case eBrainBaseState.stressed:
+				m_stressDurability = durInSec;
+				break;
+			case eBrainBaseState.lonely:
+				m_lonelinessDurability = durInSec;
+				break;
 		}
 	}
 
@@ -202,45 +202,45 @@ public class BrainBase : MonoBehaviour
 	{
 		switch (m_state)
 		{
-		case eBrainBaseState.hungry:
-			if (m_body.FindFood(m_hunger, deltaTime))
-			{
-				ChangeStateBy(eBrainBaseState.hungry, -1f);
-			}
-			break;
-		case eBrainBaseState.thirsty:
-			if (m_body.FindDrink(m_thirst, deltaTime))
-			{
-				ChangeStateBy(eBrainBaseState.thirsty, -1f);
-			}
-			break;
-		case eBrainBaseState.fatigued:
-			if (m_body.FindSleep(m_fatigue, deltaTime))
-			{
-				ChangeStateBy(eBrainBaseState.fatigued, -1f);
-			}
-			break;
-		case eBrainBaseState.injured:
-			if (m_body.FindHealing(m_injury, deltaTime))
-			{
-				ChangeStateBy(eBrainBaseState.injured, -1f);
-			}
-			break;
-		case eBrainBaseState.stressed:
-			if (m_body.FindCatharsis(m_stress, deltaTime))
-			{
-				ChangeStateBy(eBrainBaseState.stressed, -1f);
-			}
-			break;
-		case eBrainBaseState.lonely:
-			if (m_body.FindMates(m_loneliness, deltaTime))
-			{
-				ChangeStateBy(eBrainBaseState.lonely, -1f);
-			}
-			break;
-		case eBrainBaseState.happy:
-			m_job.Execute(deltaTime);
-			break;
+			case eBrainBaseState.hungry:
+				if (m_body.FindFood(m_hunger, deltaTime))
+				{
+					ChangeStateBy(eBrainBaseState.hungry, -1f);
+				}
+				break;
+			case eBrainBaseState.thirsty:
+				if (m_body.FindDrink(m_thirst, deltaTime))
+				{
+					ChangeStateBy(eBrainBaseState.thirsty, -1f);
+				}
+				break;
+			case eBrainBaseState.fatigued:
+				if (m_body.FindSleep(m_fatigue, deltaTime))
+				{
+					ChangeStateBy(eBrainBaseState.fatigued, -1f);
+				}
+				break;
+			case eBrainBaseState.injured:
+				if (m_body.FindHealing(m_injury, deltaTime))
+				{
+					ChangeStateBy(eBrainBaseState.injured, -1f);
+				}
+				break;
+			case eBrainBaseState.stressed:
+				if (m_body.FindCatharsis(m_stress, deltaTime))
+				{
+					ChangeStateBy(eBrainBaseState.stressed, -1f);
+				}
+				break;
+			case eBrainBaseState.lonely:
+				if (m_body.FindMates(m_loneliness, deltaTime))
+				{
+					ChangeStateBy(eBrainBaseState.lonely, -1f);
+				}
+				break;
+			case eBrainBaseState.happy:
+				m_job.Execute(deltaTime);
+				break;
 		}
 	}
 }

@@ -1,20 +1,17 @@
+﻿using System;
 using UnityEngine;
 
 public abstract class BodyBase : MonoBehaviour
 {
-	protected eBodyBaseState m_state;
-
-	protected BrainBase m_brain;
-
-	protected JobBase m_job;
-
-	public Vector3 m_homePos;
+	protected BodyBase()
+	{
+	}
 
 	protected void Init()
 	{
-		m_brain = GetComponent<BrainBase>();
-		m_job = GetComponent<JobBase>();
-		m_homePos = base.transform.position;
+		this.m_brain = base.GetComponent<BrainBase>();
+		this.m_job = base.GetComponent<JobBase>();
+		this.m_homePos = base.transform.position;
 	}
 
 	public abstract bool GoTo(Vector3 a_target);
@@ -41,6 +38,14 @@ public abstract class BodyBase : MonoBehaviour
 
 	public eBodyBaseState GetState()
 	{
-		return m_state;
+		return this.m_state;
 	}
+
+	protected eBodyBaseState m_state;
+
+	protected BrainBase m_brain;
+
+	protected JobBase m_job;
+
+	public Vector3 m_homePos;
 }

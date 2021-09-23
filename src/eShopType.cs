@@ -1,3 +1,5 @@
+﻿using System;
+
 public enum eShopType
 {
 	eGeneral,

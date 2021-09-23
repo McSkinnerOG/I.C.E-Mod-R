@@ -1,7 +1,12 @@
+﻿using System;
 using Lidgren.Network;
 
 public class VerificationData
 {
+	public VerificationData()
+	{
+	}
+
 	public string name = string.Empty;
 
 	public string pwhash = string.Empty;

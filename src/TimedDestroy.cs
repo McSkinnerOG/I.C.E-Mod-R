@@ -1,21 +1,26 @@
+﻿using System;
 using UnityEngine;
 
 public class TimedDestroy : MonoBehaviour
 {
-	public float m_destroyAfter = 10f;
-
-	private float m_dieTime;
+	public TimedDestroy()
+	{
+	}
 
 	private void Start()
 	{
-		m_dieTime = Time.time + m_destroyAfter;
+		this.m_dieTime = Time.time + this.m_destroyAfter;
 	}
 
 	private void Update()
 	{
-		if (Time.time > m_dieTime)
+		if (Time.time > this.m_dieTime)
 		{
-			Object.Destroy(base.gameObject);
+			UnityEngine.Object.Destroy(base.gameObject);
 		}
 	}
+
+	public float m_destroyAfter = 60f;
+
+	private float m_dieTime;
 }

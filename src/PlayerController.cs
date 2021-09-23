@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(Rigidbody))]
@@ -81,21 +81,21 @@ public class PlayerController : MonoBehaviour
 				bool flag2 = num > 1f;
 				switch (Mathf.RoundToInt(Mathf.Abs(num)))
 				{
-				case 0:
-					changeMovementState(1);
-					break;
-				case 45:
-					changeMovementState((byte)((!flag2) ? 9 : 10));
-					break;
-				case 90:
-					changeMovementState((byte)((!flag2) ? 7 : 8));
-					break;
-				case 135:
-					changeMovementState((byte)((!flag2) ? 11 : 12));
-					break;
-				case 180:
-					changeMovementState(2);
-					break;
+					case 0:
+						changeMovementState(1);
+						break;
+					case 45:
+						changeMovementState((byte)((!flag2) ? 9 : 10));
+						break;
+					case 90:
+						changeMovementState((byte)((!flag2) ? 7 : 8));
+						break;
+					case 135:
+						changeMovementState((byte)((!flag2) ? 11 : 12));
+						break;
+					case 180:
+						changeMovementState(2);
+						break;
 				}
 				if (Mathf.Abs(num) > 91f)
 				{

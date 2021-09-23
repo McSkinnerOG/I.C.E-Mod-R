@@ -1,7 +1,82 @@
+﻿using System;
 using UnityEngine;
 
 public class CameraBehaviors : MonoBehaviour
 {
+	public CameraBehaviors()
+	{
+	}
+
+	private void UpdateInput()
+	{
+		this.dest_speedX = Input.GetAxis("Horizontal");
+		this.dest_speedZ = Input.GetAxis("Vertical");
+		this.speedX = Mathf.Lerp(this.speedX, this.dest_speedX, this.breakSpeed);
+		this.speedZ = Mathf.Lerp(this.speedZ, this.dest_speedZ, this.breakSpeed);
+		Mathf.Clamp(this.speedX, -this.maxSpeed, this.maxSpeed);
+		Mathf.Clamp(this.speedZ, -this.maxSpeed, this.maxSpeed);
+	}
+
+	private void UpdatePosition()
+	{
+		Vector3 position = base.transform.position;
+		if (this.InvertX)
+		{
+			position.x -= this.speedX;
+			if (position.x > this.BoundLeft)
+			{
+				position.x = this.BoundLeft;
+			}
+			if (position.x < this.BoundRight)
+			{
+				position.x = this.BoundRight;
+			}
+		}
+		else
+		{
+			position.x += this.speedX;
+			if (position.x < this.BoundLeft)
+			{
+				position.x = this.BoundLeft;
+			}
+			if (position.x > this.BoundRight)
+			{
+				position.x = this.BoundRight;
+			}
+		}
+		if (this.InvertZ)
+		{
+			position.z -= this.speedZ;
+			if (position.z > this.BoundTop)
+			{
+				position.z = this.BoundTop;
+			}
+			if (position.z < this.BoundBottom)
+			{
+				position.z = this.BoundBottom;
+			}
+		}
+		else
+		{
+			position.z += this.speedZ;
+			if (position.z < this.BoundTop)
+			{
+				position.z = this.BoundTop;
+			}
+			if (position.z > this.BoundBottom)
+			{
+				position.z = this.BoundBottom;
+			}
+		}
+		base.transform.position = position;
+	}
+
+	private void Update()
+	{
+		this.UpdateInput();
+		this.UpdatePosition();
+	}
+
 	public float maxSpeed = 1f;
 
 	public float breakSpeed = 0.1f;
@@ -25,74 +100,4 @@ public class CameraBehaviors : MonoBehaviour
 	private float speedX;
 
 	private float speedZ;
-
-	private void UpdateInput()
-	{
-		dest_speedX = Input.GetAxis("Horizontal");
-		dest_speedZ = Input.GetAxis("Vertical");
-		speedX = Mathf.Lerp(speedX, dest_speedX, breakSpeed);
-		speedZ = Mathf.Lerp(speedZ, dest_speedZ, breakSpeed);
-		Mathf.Clamp(speedX, 0f - maxSpeed, maxSpeed);
-		Mathf.Clamp(speedZ, 0f - maxSpeed, maxSpeed);
-	}
-
-	private void UpdatePosition()
-	{
-		Vector3 position = base.transform.position;
-		if (InvertX)
-		{
-			position.x -= speedX;
-			if (position.x > BoundLeft)
-			{
-				position.x = BoundLeft;
-			}
-			if (position.x < BoundRight)
-			{
-				position.x = BoundRight;
-			}
-		}
-		else
-		{
-			position.x += speedX;
-			if (position.x < BoundLeft)
-			{
-				position.x = BoundLeft;
-			}
-			if (position.x > BoundRight)
-			{
-				position.x = BoundRight;
-			}
-		}
-		if (InvertZ)
-		{
-			position.z -= speedZ;
-			if (position.z > BoundTop)
-			{
-				position.z = BoundTop;
-			}
-			if (position.z < BoundBottom)
-			{
-				position.z = BoundBottom;
-			}
-		}
-		else
-		{
-			position.z += speedZ;
-			if (position.z < BoundTop)
-			{
-				position.z = BoundTop;
-			}
-			if (position.z > BoundBottom)
-			{
-				position.z = BoundBottom;
-			}
-		}
-		base.transform.position = position;
-	}
-
-	private void Update()
-	{
-		UpdateInput();
-		UpdatePosition();
-	}
 }

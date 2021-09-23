@@ -1,16 +1,11 @@
+﻿using System;
 using UnityEngine;
 
 public class DestroyableResource : ServerBuilding
 {
-	public int m_itemIndex = 130;
-
-	public int m_quantity = 1000;
-
-	public float m_respawnDur = 120f;
-
-	private float m_respawnTime;
-
-	private int m_curQuantity;
+	public DestroyableResource()
+	{
+	}
 
 	public override bool Use(ServerPlayer a_player)
 	{
@@ -19,49 +14,50 @@ public class DestroyableResource : ServerBuilding
 
 	public override float GetState()
 	{
-		return (!(m_respawnTime > 0f) || !(Time.time < m_respawnTime)) ? 1f : 0.4f;
+		bool flag = this.m_respawnTime > 0f && Time.time < this.m_respawnTime;
+		return (!flag) ? 1f : 0.4f;
 	}
 
 	protected override void Awake()
 	{
-		m_curQuantity = m_quantity;
+		this.m_curQuantity = this.m_quantity;
 		base.Awake();
 	}
 
 	protected override void Update()
 	{
-		if (m_gotDamage > 0f && m_curQuantity > 0)
+		if (this.m_gotDamage > 0f && this.m_curQuantity > 0)
 		{
-			int num = Mathf.Min(1 + (int)(m_gotDamage * 0.08f), m_curQuantity);
-			if (null == m_server)
+			int num = Mathf.Min(1 + (int)(this.m_gotDamage * 0.08f), this.m_curQuantity);
+			if (null == this.m_server)
 			{
-				m_server = Object.FindObjectOfType<LidServer>();
+				this.m_server = UnityEngine.Object.FindObjectOfType<LidServer>();
 			}
-			if (null != m_server)
+			if (null != this.m_server)
 			{
-				Vector3 a_pos = (!(null == m_gotAttacker)) ? m_gotAttacker.position : (base.transform.position + base.transform.forward);
-				m_server.CreateFreeWorldItem(m_itemIndex, num, a_pos);
+				Vector3 a_pos = (!(null == this.m_gotAttacker)) ? this.m_gotAttacker.position : (base.transform.position + base.transform.forward);
+				this.m_server.CreateFreeWorldItem(this.m_itemIndex, num, a_pos);
 			}
-			m_curQuantity -= num;
-			if (m_curQuantity <= 0)
+			this.m_curQuantity -= num;
+			if (this.m_curQuantity <= 0)
 			{
-				m_respawnTime = Time.time + m_respawnDur;
-				if (m_isStatic)
+				this.m_respawnTime = Time.time + this.m_respawnDur;
+				if (this.m_isStatic)
 				{
-					SendStateToClients();
+					this.SendStateToClients();
 				}
 			}
-			m_gotAttacker = null;
-			m_gotDamage = 0f;
+			this.m_gotAttacker = null;
+			this.m_gotDamage = 0f;
 		}
-		if (m_respawnTime > 0f && Time.time > m_respawnTime)
+		if (this.m_respawnTime > 0f && Time.time > this.m_respawnTime)
 		{
-			m_curQuantity = m_quantity;
-			m_respawnTime = 0f;
-			m_gotDamage = 0f;
-			if (m_isStatic)
+			this.m_curQuantity = this.m_quantity;
+			this.m_respawnTime = 0f;
+			this.m_gotDamage = 0f;
+			if (this.m_isStatic)
 			{
-				SendStateToClients();
+				this.SendStateToClients();
 			}
 		}
 		base.Update();
@@ -69,13 +65,13 @@ public class DestroyableResource : ServerBuilding
 
 	private void SendStateToClients()
 	{
-		if (null == m_server)
+		if (null == this.m_server)
 		{
-			m_server = Object.FindObjectOfType<LidServer>();
+			this.m_server = UnityEngine.Object.FindObjectOfType<LidServer>();
 		}
-		if (null != m_server)
+		if (null != this.m_server)
 		{
-			m_server.BroadcastStaticBuildingChange(this);
+			this.m_server.BroadcastStaticBuildingChange(this);
 		}
 	}
 
@@ -84,7 +80,17 @@ public class DestroyableResource : ServerBuilding
 		float num = Mathf.Clamp(a_col.relativeVelocity.sqrMagnitude - 10f, 0f, 10000f);
 		if (num > 1f)
 		{
-			m_gotDamage = num;
+			this.m_gotDamage = num;
 		}
 	}
+
+	public int m_itemIndex = 130;
+
+	public int m_quantity = 10;
+
+	public float m_respawnDur = 120f;
+
+	private float m_respawnTime;
+
+	private int m_curQuantity;
 }

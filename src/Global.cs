@@ -1,5 +1,16 @@
+﻿using System;
+
 public class Global
 {
+	public Global()
+	{
+	}
+
+	// Note: this type is marked as 'beforefieldinit'.
+	static Global()
+	{
+	}
+
 	public const string prefShowHintsX = "prefHints";
 
 	public const string prefVolume = "prefVolume";

@@ -1,23 +1,18 @@
+﻿using System;
 using UnityEngine;
 
 public class Horde : MonoBehaviour
 {
-	public JobAI[] m_actors;
-
-	public Transform[] m_waypoints;
-
-	private int m_curPoint;
-
-	private float m_nextUpdate;
-
-	private float rndRadius = 1f;
+	public Horde()
+	{
+	}
 
 	private void Start()
 	{
-		rndRadius = m_actors.Length;
-		for (int i = 0; i < m_actors.Length; i++)
+		this.rndRadius = (float)this.m_actors.Length;
+		for (int i = 0; i < this.m_actors.Length; i++)
 		{
-			BodyAISimple component = m_actors[i].gameObject.GetComponent<BodyAISimple>();
+			BodyAISimple component = this.m_actors[i].gameObject.GetComponent<BodyAISimple>();
 			if (null != component)
 			{
 				component.m_activeOffscreen = true;
@@ -27,28 +22,27 @@ public class Horde : MonoBehaviour
 
 	private void Update()
 	{
-		if (!(Time.time > m_nextUpdate))
+		if (Time.time > this.m_nextUpdate)
 		{
-			return;
-		}
-		if (DidActorsArrive())
-		{
-			m_curPoint++;
-			if (m_curPoint == m_waypoints.Length)
+			if (this.DidActorsArrive())
 			{
-				m_curPoint = 0;
+				this.m_curPoint++;
+				if (this.m_curPoint == this.m_waypoints.Length)
+				{
+					this.m_curPoint = 0;
+				}
+				this.RelocateActors(this.m_waypoints[this.m_curPoint].position);
 			}
-			RelocateActors(m_waypoints[m_curPoint].position);
+			this.AttackAsTeam();
+			this.m_nextUpdate = Time.time + UnityEngine.Random.Range(1f, 2f);
 		}
-		AttackAsTeam();
-		m_nextUpdate = Time.time + Random.Range(1f, 2f);
 	}
 
 	private bool DidActorsArrive()
 	{
-		for (int i = 0; i < m_actors.Length; i++)
+		for (int i = 0; i < this.m_actors.Length; i++)
 		{
-			if (null != m_actors[i] && m_actors[i].IsRelocating())
+			if (null != this.m_actors[i] && this.m_actors[i].IsRelocating())
 			{
 				return false;
 			}
@@ -58,12 +52,12 @@ public class Horde : MonoBehaviour
 
 	private void RelocateActors(Vector3 a_pos)
 	{
-		for (int i = 0; i < m_actors.Length; i++)
+		for (int i = 0; i < this.m_actors.Length; i++)
 		{
-			if (null != m_actors[i])
+			if (null != this.m_actors[i])
 			{
-				Vector3 a_pos2 = a_pos + new Vector3(Random.Range(0f - rndRadius, rndRadius), 0f, Random.Range(0f - rndRadius, rndRadius));
-				m_actors[i].RelocateHome(a_pos2);
+				Vector3 a_pos2 = a_pos + new Vector3(UnityEngine.Random.Range(-this.rndRadius, this.rndRadius), 0f, UnityEngine.Random.Range(-this.rndRadius, this.rndRadius));
+				this.m_actors[i].RelocateHome(a_pos2);
 			}
 		}
 	}
@@ -71,24 +65,33 @@ public class Horde : MonoBehaviour
 	private void AttackAsTeam()
 	{
 		Transform transform = null;
-		for (int i = 0; i < m_actors.Length; i++)
+		for (int i = 0; i < this.m_actors.Length; i++)
 		{
-			if (null != m_actors[i] && null != m_actors[i].GetEnemy())
+			if (null != this.m_actors[i] && null != this.m_actors[i].GetEnemy())
 			{
-				transform = m_actors[i].GetEnemy();
+				transform = this.m_actors[i].GetEnemy();
 				break;
 			}
 		}
-		if (!(null != transform))
+		if (null != transform)
 		{
-			return;
-		}
-		for (int j = 0; j < m_actors.Length; j++)
-		{
-			if (null != m_actors[j] && null == m_actors[j].GetEnemy())
+			for (int j = 0; j < this.m_actors.Length; j++)
 			{
-				m_actors[j].SetAggressor(transform);
+				if (null != this.m_actors[j] && null == this.m_actors[j].GetEnemy())
+				{
+					this.m_actors[j].SetAggressor(transform);
+				}
 			}
 		}
 	}
+
+	public JobAI[] m_actors;
+
+	public Transform[] m_waypoints;
+
+	private int m_curPoint;
+
+	private float m_nextUpdate;
+
+	private float rndRadius = 1f;
 }

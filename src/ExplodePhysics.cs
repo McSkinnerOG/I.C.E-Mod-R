@@ -1,14 +1,16 @@
+﻿using System;
 using UnityEngine;
 
 public class ExplodePhysics : MonoBehaviour
 {
-	public GameObject m_explosion;
+	public ExplodePhysics()
+	{
+	}
 
 	private void Start()
 	{
-		Renderer[] componentsInChildren = GetComponentsInChildren<Renderer>();
-		Renderer[] array = componentsInChildren;
-		foreach (Renderer renderer in array)
+		Renderer[] componentsInChildren = base.GetComponentsInChildren<Renderer>();
+		foreach (Renderer renderer in componentsInChildren)
 		{
 			Transform transform = renderer.transform;
 			transform.parent = null;
@@ -17,8 +19,10 @@ public class ExplodePhysics : MonoBehaviour
 			transform.gameObject.AddComponent<Rigidbody>();
 		}
 		Vector3 position = base.transform.position + Vector3.up * 0.5f + (Camera.main.transform.position - base.transform.position) * 0.25f;
-		GameObject gameObject = (GameObject)Object.Instantiate(m_explosion, position, Quaternion.identity);
+		GameObject gameObject = (GameObject)UnityEngine.Object.Instantiate(this.m_explosion, position, Quaternion.identity);
 		gameObject.transform.parent = Camera.main.transform;
-		Object.Destroy(base.gameObject);
+		UnityEngine.Object.Destroy(base.gameObject);
 	}
+
+	public GameObject m_explosion;
 }

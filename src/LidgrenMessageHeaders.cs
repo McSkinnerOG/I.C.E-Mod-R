@@ -1,5 +1,12 @@
+﻿using System;
+
 public static class LidgrenMessageHeaders
 {
+	// Note: this type is marked as 'beforefieldinit'.
+	static LidgrenMessageHeaders()
+	{
+	}
+
 	public static byte Spawn;
 
 	public static byte Position = 1;

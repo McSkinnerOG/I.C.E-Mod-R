@@ -1,16 +1,21 @@
+﻿using System;
 using UnityEngine;
 
 public abstract class JobBase : MonoBehaviour
 {
-	protected BrainBase m_brain;
-
-	protected BodyBase m_body;
+	protected JobBase()
+	{
+	}
 
 	protected void Init()
 	{
-		m_brain = GetComponent<BrainBase>();
-		m_body = GetComponent<BodyBase>();
+		this.m_brain = base.GetComponent<BrainBase>();
+		this.m_body = base.GetComponent<BodyBase>();
 	}
 
 	public abstract void Execute(float deltaTime);
+
+	protected BrainBase m_brain;
+
+	protected BodyBase m_body;
 }

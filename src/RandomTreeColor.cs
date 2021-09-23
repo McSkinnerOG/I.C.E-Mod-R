@@ -1,13 +1,18 @@
+﻿using System;
 using UnityEngine;
 
 public class RandomTreeColor : MonoBehaviour
 {
-	public Color m_fromColor = Color.black;
-
-	public Color m_toColor = Color.white;
+	public RandomTreeColor()
+	{
+	}
 
 	private void Start()
 	{
-		base.renderer.material.color = new Color(Random.Range(m_fromColor.r, m_toColor.r), Random.Range(m_fromColor.g, m_toColor.g), Random.Range(m_fromColor.b, m_toColor.b));
+		base.renderer.material.color = new Color(UnityEngine.Random.Range(this.m_fromColor.r, this.m_toColor.r), UnityEngine.Random.Range(this.m_fromColor.g, this.m_toColor.g), UnityEngine.Random.Range(this.m_fromColor.b, this.m_toColor.b));
 	}
+
+	public Color m_fromColor = Color.black;
+
+	public Color m_toColor = Color.white;
 }

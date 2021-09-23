@@ -1,7 +1,9 @@
+﻿using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+[assembly: AssemblyVersion("9.0.0.0")]
 [assembly: AssemblyTitle("Steamworks.NET")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
@@ -12,5 +14,3 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 [assembly: Guid("316ab144-2a2a-4847-857b-63317c980dda")]
 [assembly: AssemblyFileVersion("9.0.0")]
-[assembly: RuntimeCompatibility(WrapNonExceptionThrows = true)]
-[assembly: AssemblyVersion("9.0.0.0")]

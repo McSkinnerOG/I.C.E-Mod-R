@@ -1,6 +1,8 @@
+﻿using System;
+
 public enum eCharType
 {
-	ePlayer, //0 1 2 etc
+	ePlayer,
 	eCar,
 	eGasmaskGuy,
 	eMutant,

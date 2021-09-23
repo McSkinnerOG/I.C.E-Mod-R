@@ -1,18 +1,23 @@
+﻿using System;
 using UnityEngine;
 
 public class EditorDebugObj : MonoBehaviour
 {
-	public string m_debugLanguage = "English";
+	public EditorDebugObj()
+	{
+	}
 
 	private void Awake()
 	{
 		if (Application.isEditor)
 		{
-			LNG.Init(m_debugLanguage);
+			LNG.Init(this.m_debugLanguage);
 		}
 		else
 		{
-			Object.Destroy(base.gameObject);
+			UnityEngine.Object.Destroy(base.gameObject);
 		}
 	}
+
+	public string m_debugLanguage = "English";
 }

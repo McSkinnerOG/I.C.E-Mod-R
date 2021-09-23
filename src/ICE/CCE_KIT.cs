@@ -44,7 +44,7 @@ namespace ICE
                         server.CreateFreeWorldItem(141, 1, p_pos);   // Antibiotics
                         server.CreateFreeWorldItem(142, 2, p_pos);   // Painkillers
                         server.CreateFreeWorldItem(143, 1, p_pos);   // Medpack
-                        LidServer.SendMoneyUpdate(player); // Request money update from server.
+                        server.SendMoneyUpdate(player); // Request money update from server.
                         server.SendMessageToPlayerLocal("BOUGHT DOCTOR KIT!!!", player, msg); // Return success message!!!
                     }
                     break;
@@ -73,7 +73,7 @@ namespace ICE
                         server.CreateFreeWorldItem(18, 2, p_pos);    // Beer
                         // ITEMS
                         server.CreateFreeWorldItem(140, 3, p_pos);   // Bandages
-                        LidServer.SendMoneyUpdate(player);
+                        server.SendMoneyUpdate(player);
                         server.SendMessageToPlayerLocal("BOUGHT SCAV KIT!!!", player, msg);
                     }
                     break;
@@ -103,7 +103,7 @@ namespace ICE
                         // ITEMS
                         server.CreateFreeWorldItem(140, 2, p_pos);   // Bandages
                         server.CreateFreeWorldItem(140, 1, p_pos);   // Painkillers
-                        LidServer.SendMoneyUpdate(player);
+                        server.SendMoneyUpdate(player);
                         server.SendMessageToPlayerLocal("BOUGHT SCAV-2 KIT!!!", player, msg);
                     }
                     break;
@@ -133,7 +133,7 @@ namespace ICE
                         // ITEMS
                         server.CreateFreeWorldItem(140, 2, p_pos);   // Bandages
                         server.CreateFreeWorldItem(140, 1, p_pos);   // Painkillers
-                        LidServer.SendMoneyUpdate(player);
+                        server.SendMoneyUpdate(player);
                         server.SendMessageToPlayerLocal("BOUGHT SCAV-3 KIT!!!", player, msg);
                     }
                     break;
@@ -165,7 +165,7 @@ namespace ICE
                         // ITEMS
                         server.CreateFreeWorldItem(140, 2, p_pos);   // Bandages
                         server.CreateFreeWorldItem(142, 2, p_pos);   // Painkillers
-                        LidServer.SendMoneyUpdate(player);
+                        server.SendMoneyUpdate(player);
                         server.SendMessageToPlayerLocal("BOUGHT BANDIT KIT!!!", player, msg);
                     }
                     break;
@@ -195,7 +195,7 @@ namespace ICE
                         // ITEMS
                         server.CreateFreeWorldItem(140, 2, p_pos);   // Bandages
                         server.CreateFreeWorldItem(142, 2, p_pos);   // Painkillers
-                        LidServer.SendMoneyUpdate(player);
+                        server.SendMoneyUpdate(player);
                         server.SendMessageToPlayerLocal("BOUGHT BANDIT KIT!!!", player, msg);
                     }
                     break;
@@ -225,7 +225,7 @@ namespace ICE
                         // ITEMS
                         server.CreateFreeWorldItem(140, 2, p_pos);   // Bandages
                         server.CreateFreeWorldItem(142, 2, p_pos);   // Painkillers
-                        LidServer.SendMoneyUpdate(player);
+                        server.SendMoneyUpdate(player);
                         server.SendMessageToPlayerLocal("BOUGHT BANDIT KIT!!!", player, msg);
                     }
                     break;
@@ -256,7 +256,7 @@ namespace ICE
                         server.CreateFreeWorldItem(140, 2, p_pos);   // Bandages
                         server.CreateFreeWorldItem(142, 2, p_pos);   // Painkillers
                         server.CreateFreeWorldItem(143, 1, p_pos);   // Medkit
-                        LidServer.SendMoneyUpdate(player);
+                        server.SendMoneyUpdate(player);
                         server.SendMessageToPlayerLocal("BOUGHT GUARD-1 KIT!!!", player, msg);
                     }
                     break;
@@ -287,7 +287,7 @@ namespace ICE
                         server.CreateFreeWorldItem(140, 2, p_pos);   // Bandages
                         server.CreateFreeWorldItem(142, 2, p_pos);   // Painkillers
                         server.CreateFreeWorldItem(143, 1, p_pos);   // Medkit
-                        LidServer.SendMoneyUpdate(player);
+                        server.SendMoneyUpdate(player);
                         server.SendMessageToPlayerLocal("BOUGHT GUARD-2 KIT!!!", player, msg);
                     }
                     break;
@@ -318,7 +318,7 @@ namespace ICE
                         server.CreateFreeWorldItem(140, 2, p_pos);   // Bandages
                         server.CreateFreeWorldItem(142, 2, p_pos);   // Painkillers
                         server.CreateFreeWorldItem(143, 1, p_pos);   // Medkit
-                        LidServer.SendMoneyUpdate(player);
+                        server.SendMoneyUpdate(player);
                         server.SendMessageToPlayerLocal("BOUGHT GUARD-3 KIT!!!", player, msg);
                     }
                     break;

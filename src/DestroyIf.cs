@@ -1,16 +1,21 @@
+﻿using System;
 using UnityEngine;
 
 public class DestroyIf : MonoBehaviour
 {
-	public bool ifServer;
-
-	public bool ifClient;
+	public DestroyIf()
+	{
+	}
 
 	private void Awake()
 	{
-		if ((ifServer && Global.isServer) || (ifClient && !Global.isServer))
+		if ((this.ifServer && Global.isServer) || (this.ifClient && !Global.isServer))
 		{
-			Object.DestroyImmediate(base.gameObject);
+			UnityEngine.Object.DestroyImmediate(base.gameObject);
 		}
 	}
+
+	public bool ifServer;
+
+	public bool ifClient;
 }

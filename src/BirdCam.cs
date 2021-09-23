@@ -1,7 +1,43 @@
+﻿using System;
 using UnityEngine;
 
 public class BirdCam : MonoBehaviour
 {
+	public BirdCam()
+	{
+	}
+
+	private void Start()
+	{
+		this.m_dof = base.GetComponent<DepthOfFieldScatter>();
+	}
+
+	private void LateUpdate()
+	{
+		if (null == this.m_target)
+		{
+			return;
+		}
+		if (null != this.m_dof)
+		{
+			this.m_dof.focalTransform = this.m_target;
+		}
+		float deltaTime = Time.deltaTime;
+		if (Time.time > this.m_nextSpeedUpdate)
+		{
+			this.m_speed = (this.m_lastTargetPos - this.m_target.position).magnitude / this.m_speedUpdateInterval;
+			this.m_lastTargetPos = this.m_target.position;
+			this.m_nextSpeedUpdate = Time.time + this.m_speedUpdateInterval;
+		}
+		float num = 0.25f * Mathf.Clamp01(this.m_speed / 15f);
+		this.m_zoomAdd += (num - this.m_zoomAdd) * deltaTime;
+		this.m_zoom = Mathf.Clamp(this.m_zoom - Input.GetAxis("Mouse ScrollWheel") * deltaTime * 5f, this.m_zoomMin, this.m_zoomMax);
+		Vector3 b = this.m_startOffset * (this.m_zoom + this.m_zoomAdd);
+		Vector3 a = this.m_target.forward * this.m_lookDirInfluence;
+		this.m_targetOffset += (a - this.m_targetOffset) * deltaTime;
+		base.transform.position = this.m_target.position + this.m_targetOffset + b;
+	}
+
 	public Transform m_target;
 
 	public Vector3 m_startOffset = new Vector3(0f, 16f, 16f);
@@ -27,34 +63,4 @@ public class BirdCam : MonoBehaviour
 	private float m_nextSpeedUpdate;
 
 	private float m_speedUpdateInterval = 0.3f;
-
-	private void Start()
-	{
-		m_dof = GetComponent<DepthOfFieldScatter>();
-	}
-
-	private void LateUpdate()
-	{
-		if (!(null == m_target))
-		{
-			if (null != m_dof)
-			{
-				m_dof.focalTransform = m_target;
-			}
-			float deltaTime = Time.deltaTime;
-			if (Time.time > m_nextSpeedUpdate)
-			{
-				m_speed = (m_lastTargetPos - m_target.position).magnitude / m_speedUpdateInterval;
-				m_lastTargetPos = m_target.position;
-				m_nextSpeedUpdate = Time.time + m_speedUpdateInterval;
-			}
-			float num = 0.25f * Mathf.Clamp01(m_speed / 15f);
-			m_zoomAdd += (num - m_zoomAdd) * deltaTime;
-			m_zoom = Mathf.Clamp(m_zoom - Input.GetAxis("Mouse ScrollWheel") * deltaTime * 5f, m_zoomMin, m_zoomMax);
-			Vector3 b = m_startOffset * (m_zoom + m_zoomAdd);
-			Vector3 a = m_target.forward * m_lookDirInfluence;
-			m_targetOffset += (a - m_targetOffset) * deltaTime;
-			base.transform.position = m_target.position + m_targetOffset + b;
-		}
-	}
 }

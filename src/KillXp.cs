@@ -1,5 +1,15 @@
+﻿using System;
+
 public struct KillXp
 {
+	public KillXp(ServerPlayer a_player, ServerNpc a_npc, float a_xp, float a_time)
+	{
+		this.player = a_player;
+		this.npc = a_npc;
+		this.xp = a_xp;
+		this.deletetime = a_time;
+	}
+
 	public ServerPlayer player;
 
 	public ServerNpc npc;
@@ -7,12 +17,4 @@ public struct KillXp
 	public float xp;
 
 	public float deletetime;
-
-	public KillXp(ServerPlayer a_player, ServerNpc a_npc, float a_xp, float a_time)
-	{
-		player = a_player;
-		npc = a_npc;
-		xp = a_xp;
-		deletetime = a_time;
-	}
 }

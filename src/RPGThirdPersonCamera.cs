@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class RPGThirdPersonCamera : MonoBehaviour
 {
@@ -50,35 +50,13 @@ public class RPGThirdPersonCamera : MonoBehaviour
 
 	public string MouseLookButton = "Fire2";
 
-	public static RPGThirdPersonCamera Instance
-	{
-		get;
-		set;
-	}
+	public static RPGThirdPersonCamera Instance { get; private set; }
 
-	public bool HasCamera
-	{
-		get
-		{
-			return Camera != null;
-		}
-	}
+	public bool HasCamera => Camera != null;
 
-	public bool HasTarget
-	{
-		get
-		{
-			return Target != null;
-		}
-	}
+	public bool HasTarget => Target != null;
 
-	public Vector3 TargetPosition
-	{
-		get
-		{
-			return (!HasTarget) ? TargetOffset : (Target.position + TargetOffset);
-		}
-	}
+	public Vector3 TargetPosition => (!HasTarget) ? TargetOffset : (Target.position + TargetOffset);
 
 	private void Start()
 	{
@@ -118,18 +96,18 @@ public class RPGThirdPersonCamera : MonoBehaviour
 			targetDistance = realDistance;
 			targetDistance = Mathf.Clamp(targetDistance, currentMinDistance, currentMaxDistance);
 			currentDistance = targetDistance;
-			Vector3 point = new Vector3(0f, 0f, 0f - currentDistance);
+			Vector3 vector = new Vector3(0f, 0f, 0f - currentDistance);
 			if (buttonSafe)
 			{
 				targetPitch -= RPGControllerUtils.GetAxisRawSafe(PitchAxis, 0f) * 4f;
 				targetPitch = Mathf.Clamp(targetPitch, MinPitch, MaxPitch);
 			}
-			targetYaw = RPGControllerUtils.SignedAngle(point.normalized, -Target.transform.forward, Vector3.up);
+			targetYaw = RPGControllerUtils.SignedAngle(vector.normalized, -Target.transform.forward, Vector3.up);
 			targetYaw = Mathf.Repeat(targetYaw + 180f, 360f) - 180f;
 			currentYaw = targetYaw;
 			currentPitch = targetPitch;
-			point = Quaternion.Euler(currentPitch, currentYaw, 0f) * point;
-			base.transform.position = TargetPosition + point;
+			vector = Quaternion.Euler(currentPitch, currentYaw, 0f) * vector;
+			base.transform.position = TargetPosition + vector;
 			Vector3 position = base.transform.position;
 			base.transform.position = new Vector3(position.x, Mathf.Clamp(position.y, yClamp, float.MaxValue), position.z);
 			Camera.transform.LookAt(TargetPosition);

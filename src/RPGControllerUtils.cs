@@ -1,3 +1,4 @@
+﻿using System;
 using UnityEngine;
 
 public static class RPGControllerUtils
@@ -9,43 +10,46 @@ public static class RPGControllerUtils
 
 	public static bool GetButtonSafe(string name, bool @default)
 	{
-		//Discarded unreachable code: IL_000c, IL_002e
+		bool result;
 		try
 		{
-			return Input.GetButton(name);
+			result = Input.GetButton(name);
 		}
 		catch
 		{
 			Debug.LogError("The button '" + name + "' isn't defined in the input manager");
-			return @default;
+			result = @default;
 		}
+		return result;
 	}
 
 	public static bool GetButtonDownSafe(string name, bool @default)
 	{
-		//Discarded unreachable code: IL_000c, IL_002e
+		bool result;
 		try
 		{
-			return Input.GetButtonDown(name);
+			result = Input.GetButtonDown(name);
 		}
 		catch
 		{
 			Debug.LogError("The button '" + name + "' isn't defined in the input manager");
-			return @default;
+			result = @default;
 		}
+		return result;
 	}
 
 	public static float GetAxisRawSafe(string name, float @default)
 	{
-		//Discarded unreachable code: IL_000c, IL_002e
+		float result;
 		try
 		{
-			return Input.GetAxisRaw(name);
+			result = Input.GetAxisRaw(name);
 		}
 		catch
 		{
 			Debug.LogError("The axis '" + name + "' isn't defined in the input manager");
-			return @default;
+			result = @default;
 		}
+		return result;
 	}
 }

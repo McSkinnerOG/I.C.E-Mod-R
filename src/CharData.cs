@@ -1,5 +1,20 @@
+﻿using System;
+
 public struct CharData
 {
+	public CharData(eCharType a_type)
+	{
+		this.name = string.Empty;
+		this.aid = 0UL;
+		this.handItem = 0;
+		this.look = 0;
+		this.skin = 0;
+		this.body = 0;
+		this.rank = 0;
+		this.karma = 100;
+		this.type = a_type;
+	}
+
 	public string name;
 
 	public ulong aid;
@@ -17,17 +32,4 @@ public struct CharData
 	public int karma;
 
 	public eCharType type;
-
-	public CharData(eCharType a_type)
-	{
-		name = string.Empty;
-		aid = 0uL;
-		handItem = 0;
-		look = 0;
-		skin = 0;
-		body = 0;
-		rank = 0;
-		karma = 100;
-		type = a_type;
-	}
 }

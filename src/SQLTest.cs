@@ -1,8 +1,11 @@
+﻿using System;
 using UnityEngine;
 
 public class SQLTest : MonoBehaviour
 {
-	private SQLThreadManager m_sql;
+	public SQLTest()
+	{
+	}
 
 	private void Start()
 	{
@@ -10,10 +13,16 @@ public class SQLTest : MonoBehaviour
 
 	private void Update()
 	{
-		DatabaseItem[] array = m_sql.PopRequestedItems();
+		DatabaseItem[] array = this.m_sql.PopRequestedItems();
 		if (array != null)
 		{
-			Debug.Log("got items: " + array.Length + " time: " + Time.time);
+			Debug.Log(string.Concat(new object[]
+			{
+				"got items: ",
+				array.Length,
+				" time: ",
+				Time.time
+			}));
 			for (int i = 0; i < array.Length; i++)
 			{
 				if (array[i].cid == 0 && array[i].iid != 0)
@@ -22,10 +31,20 @@ public class SQLTest : MonoBehaviour
 				}
 			}
 		}
-		DatabasePlayer[] array2 = m_sql.PopRequestedPlayers();
+		DatabasePlayer[] array2 = this.m_sql.PopRequestedPlayers();
 		if (array2 != null)
 		{
-			Debug.Log("got players: " + array2[0].name + " x " + array2[0].x + " time: " + Time.time);
+			Debug.Log(string.Concat(new object[]
+			{
+				"got players: ",
+				array2[0].name,
+				" x ",
+				array2[0].x,
+				" time: ",
+				Time.time
+			}));
 		}
 	}
+
+	private SQLThreadManager m_sql;
 }

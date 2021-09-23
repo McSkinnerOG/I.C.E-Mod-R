@@ -1,7 +1,34 @@
+﻿using System;
 using UnityEngine;
 
 public class Minimap : MonoBehaviour
 {
+	public Minimap()
+	{
+	}
+
+	private void Start()
+	{
+		this.m_client = (LidClient)UnityEngine.Object.FindObjectOfType(typeof(LidClient));
+		this.m_markerStartOffset = this.m_mapMarker.localPosition;
+	}
+
+	private void Update()
+	{
+		if (!Global.isServer && null != this.m_client && this.m_client.enabled)
+		{
+			float value = 1f - Mathf.Clamp01(this.m_client.GetHealth() * 0.01f) * 0.93f;
+			float value2 = 1f - Mathf.Clamp01(this.m_client.GetEnergy() * 0.01f) * 0.93f;
+			this.m_hpBar.material.SetFloat("_Cutoff", value);
+			this.m_energyBar.material.SetFloat("_Cutoff", value2);
+			Vector3 pos = this.m_client.GetPos();
+			pos.x = pos.x / this.m_mapRadius * 0.25f;
+			pos.y = pos.z / this.m_mapRadius * 0.25f;
+			pos.z = 0f;
+			this.m_mapMarker.localPosition = this.m_markerStartOffset + pos;
+		}
+	}
+
 	public float m_mapRadius = 500f;
 
 	public Transform m_mapMarker;
@@ -13,26 +40,4 @@ public class Minimap : MonoBehaviour
 	private Vector3 m_markerStartOffset = Vector3.zero;
 
 	private LidClient m_client;
-
-	private void Start()
-	{
-		m_client = (LidClient)Object.FindObjectOfType(typeof(LidClient));
-		m_markerStartOffset = m_mapMarker.localPosition;
-	}
-
-	private void Update()   // MINIMAP 
-	{
-		if (!Global.isServer && null != m_client && m_client.enabled)
-		{
-			float value = 1f - Mathf.Clamp01(m_client.GetHealth() * 0.01f) * 0.93f;
-			float value2 = 1f - Mathf.Clamp01(m_client.GetEnergy() * 0.01f) * 0.93f;
-			m_hpBar.material.SetFloat("_Cutoff", value);
-			m_energyBar.material.SetFloat("_Cutoff", value2);
-			Vector3 pos = m_client.GetPos();
-			pos.x = pos.x / m_mapRadius * 0.25f;
-			pos.y = pos.z / m_mapRadius * 0.25f;
-			pos.z = 0f;
-			m_mapMarker.localPosition = m_markerStartOffset + pos;
-		}
-	}
 }

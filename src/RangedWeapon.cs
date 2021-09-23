@@ -1,5 +1,11 @@
+﻿using System;
+
 public class RangedWeapon : Item
 {
+	public RangedWeapon()
+	{
+	}
+
 	public float m_damage = 0.1f;
 
 	public float m_range = 50f;

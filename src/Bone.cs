@@ -1,9 +1,13 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 [Serializable]
 public class Bone
 {
+	public Bone()
+	{
+	}
+
 	public string name;
 
 	[HideInInspector]

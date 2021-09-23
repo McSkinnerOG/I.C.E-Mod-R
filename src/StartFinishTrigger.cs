@@ -1,21 +1,26 @@
+﻿using System;
 using UnityEngine;
 
 public class StartFinishTrigger : MonoBehaviour
 {
-	public GUIText m_timesDisplay;
-
-	private float m_startTime;
+	public StartFinishTrigger()
+	{
+	}
 
 	private void OnTriggerEnter()
 	{
-		if (m_startTime != 0f)
+		if (this.m_startTime != 0f)
 		{
-			m_timesDisplay.text = m_timesDisplay.text + "\n" + (Time.time - m_startTime);
+			this.m_timesDisplay.text = this.m_timesDisplay.text + "\n" + (Time.time - this.m_startTime).ToString();
 		}
-		m_startTime = Time.time;
+		this.m_startTime = Time.time;
 	}
 
 	private void Update()
 	{
 	}
+
+	public GUIText m_timesDisplay;
+
+	private float m_startTime;
 }

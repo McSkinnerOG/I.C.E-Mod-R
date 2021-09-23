@@ -1,24 +1,20 @@
-using Steamworks;
-using System;
+﻿using System;
 using System.Text;
+using Steamworks;
 using UnityEngine;
 
 [DisallowMultipleComponent]
 internal class SteamManager : MonoBehaviour
 {
-	private static SteamManager s_instance;
-
-	private static bool s_EverInialized;
-
-	private bool m_bInitialized;
-
-	private SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
+	public SteamManager()
+	{
+	}
 
 	private static SteamManager Instance
 	{
 		get
 		{
-			return s_instance ?? new GameObject("SteamManager").AddComponent<SteamManager>();
+			return SteamManager.s_instance ?? new GameObject("SteamManager").AddComponent<SteamManager>();
 		}
 	}
 
@@ -26,7 +22,7 @@ internal class SteamManager : MonoBehaviour
 	{
 		get
 		{
-			return Instance.m_bInitialized;
+			return SteamManager.Instance.m_bInitialized;
 		}
 	}
 
@@ -37,14 +33,13 @@ internal class SteamManager : MonoBehaviour
 
 	private void Awake()
 	{
-		//Discarded unreachable code: IL_00ab
-		if (s_instance != null)
+		if (SteamManager.s_instance != null)
 		{
 			UnityEngine.Object.Destroy(base.gameObject);
 			return;
 		}
-		s_instance = this;
-		if (s_EverInialized)
+		SteamManager.s_instance = this;
+		if (SteamManager.s_EverInialized)
 		{
 			throw new Exception("Tried to Initialize the SteamAPI twice in one session!");
 		}
@@ -59,7 +54,7 @@ internal class SteamManager : MonoBehaviour
 		}
 		try
 		{
-			if (SteamAPI.RestartAppIfNecessary((AppId_t)348670u))
+			if (SteamAPI.RestartAppIfNecessary((AppId_t)348670U))
 			{
 				Application.Quit();
 				return;
@@ -71,47 +66,60 @@ internal class SteamManager : MonoBehaviour
 			Application.Quit();
 			return;
 		}
-		m_bInitialized = SteamAPI.Init();
-		if (!m_bInitialized)
+		this.m_bInitialized = SteamAPI.Init();
+		if (!this.m_bInitialized)
 		{
 			Debug.LogError("[Steamworks.NET] SteamAPI_Init() failed. Refer to Valve's documentation or the comment above this line for more information.", this);
+			return;
 		}
-		else
-		{
-			s_EverInialized = true;
-		}
+		SteamManager.s_EverInialized = true;
 	}
 
 	private void OnEnable()
 	{
-		if (s_instance == null)
+		if (SteamManager.s_instance == null)
 		{
-			s_instance = this;
+			SteamManager.s_instance = this;
 		}
-		if (m_bInitialized && m_SteamAPIWarningMessageHook == null)
+		if (!this.m_bInitialized)
 		{
-			m_SteamAPIWarningMessageHook = SteamAPIDebugTextHook;
-			SteamClient.SetWarningMessageHook(m_SteamAPIWarningMessageHook);
+			return;
+		}
+		if (this.m_SteamAPIWarningMessageHook == null)
+		{
+			this.m_SteamAPIWarningMessageHook = new SteamAPIWarningMessageHook_t(SteamManager.SteamAPIDebugTextHook);
+			SteamClient.SetWarningMessageHook(this.m_SteamAPIWarningMessageHook);
 		}
 	}
 
 	private void OnDestroy()
 	{
-		if (!(s_instance != this))
+		if (SteamManager.s_instance != this)
 		{
-			s_instance = null;
-			if (m_bInitialized)
-			{
-				SteamAPI.Shutdown();
-			}
+			return;
 		}
+		SteamManager.s_instance = null;
+		if (!this.m_bInitialized)
+		{
+			return;
+		}
+		SteamAPI.Shutdown();
 	}
 
 	private void Update()
 	{
-		if (m_bInitialized)
+		if (!this.m_bInitialized)
 		{
-			SteamAPI.RunCallbacks();
+			return;
 		}
+		SteamAPI.RunCallbacks();
 	}
+
+	private static SteamManager s_instance;
+
+	private static bool s_EverInialized;
+
+	private bool m_bInitialized;
+
+	private SteamAPIWarningMessageHook_t m_SteamAPIWarningMessageHook;
 }

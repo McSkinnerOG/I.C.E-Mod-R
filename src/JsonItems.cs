@@ -1,35 +1,45 @@
+﻿using System;
 using SimpleJSON;
 using UnityEngine;
 
 public class JsonItems
 {
-	private static JSONNode m_items;
+	public JsonItems()
+	{
+	}
+
+	// Note: this type is marked as 'beforefieldinit'.
+	static JsonItems()
+	{
+	}
 
 	private static void Init()
 	{
 		TextAsset textAsset = (TextAsset)Resources.Load("inventory_steam");
 		if (null != textAsset)
 		{
-			m_items = JSONNode.Parse(textAsset.text);
+			JsonItems.m_items = JSONNode.Parse(textAsset.text);
 		}
 	}
 
 	public static JSONNode GetItem(int a_id)
 	{
-		if (null == m_items)
+		if (null == JsonItems.m_items)
 		{
-			Init();
+			JsonItems.Init();
 		}
-		if (null != m_items)
+		if (null != JsonItems.m_items)
 		{
-			for (int i = 0; i < m_items["items"].Count; i++)
+			for (int i = 0; i < JsonItems.m_items["items"].Count; i++)
 			{
-				if (m_items["items"][i]["itemdefid"].AsInt == a_id)
+				if (JsonItems.m_items["items"][i]["itemdefid"].AsInt == a_id)
 				{
-					return m_items["items"][i];
+					return JsonItems.m_items["items"][i];
 				}
 			}
 		}
 		return null;
 	}
+
+	private static JSONNode m_items;
 }

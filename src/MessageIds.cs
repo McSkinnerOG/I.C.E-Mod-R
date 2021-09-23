@@ -1,5 +1,12 @@
+﻿using System;
+
 public static class MessageIds
 {
+	// Note: this type is marked as 'beforefieldinit'.
+	static MessageIds()
+	{
+	}
+
 	public static byte Auth;
 
 	public static byte Input = 1;

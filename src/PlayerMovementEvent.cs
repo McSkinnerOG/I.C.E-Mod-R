@@ -1,3 +1,5 @@
+﻿using System;
+
 public static class PlayerMovementEvent
 {
 	public const byte Forward = 1;

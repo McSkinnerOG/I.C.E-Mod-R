@@ -1,21 +1,17 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public class MissionNpc : MonoBehaviour
 {
-	public bool m_easyMode;
-
-	public Mission m_mission = new Mission();
-
-	private float m_nextMissionChangeTime;
-
-	private MissionManager m_manager;
+	public MissionNpc()
+	{
+	}
 
 	private void Start()
 	{
 		if (Global.isServer)
 		{
-			m_manager = (MissionManager)UnityEngine.Object.FindObjectOfType(typeof(MissionManager));
+			this.m_manager = (MissionManager)UnityEngine.Object.FindObjectOfType(typeof(MissionManager));
 		}
 		else
 		{
@@ -25,20 +21,24 @@ public class MissionNpc : MonoBehaviour
 
 	private void Update()
 	{
-		if (Time.time > m_nextMissionChangeTime && m_nextMissionChangeTime != -1f)
+		if (Time.time > this.m_nextMissionChangeTime && this.m_nextMissionChangeTime != -1f)
 		{
 			int num = DateTime.Now.Second + DateTime.Now.Minute * 60;
-			MissionManager manager = m_manager;
-			Vector3 position = base.transform.position;
-			float num2 = 10f * position.x;
-			Vector3 position2 = base.transform.position;
-			m_mission = manager.GetRandomMission((int)(num2 + 1000f * position2.z) + num, m_easyMode);
-			m_nextMissionChangeTime = -1f;
+			this.m_mission = this.m_manager.GetRandomMission((int)(10f * base.transform.position.x + 1000f * base.transform.position.z) + num, this.m_easyMode);
+			this.m_nextMissionChangeTime = -1f;
 		}
 	}
 
 	public void AcceptMission()
 	{
-		m_nextMissionChangeTime = Time.time + 30f;
+		this.m_nextMissionChangeTime = Time.time + 30f;
 	}
+
+	public bool m_easyMode;
+
+	public Mission m_mission = new Mission();
+
+	private float m_nextMissionChangeTime;
+
+	private MissionManager m_manager;
 }

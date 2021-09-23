@@ -1,36 +1,29 @@
-using Lidgren.Network;
+﻿using System;
 using System.Collections.Generic;
+using Lidgren.Network;
 using UnityEngine;
 
 public class LidgrenClient : LidgrenPeer
 {
-	private int clientId;
-
-	private NetClient client;
-
-	private Dictionary<int, LidgrenGameObject> lgos = new Dictionary<int, LidgrenGameObject>();
-
-	[SerializeField]
-	private int port = 10000;
-
-	[SerializeField]
-	private string host = "127.0.0.1";
+	public LidgrenClient()
+	{
+	}
 
 	private void Start()
 	{
-		Object.DontDestroyOnLoad(this);
-		Object.DontDestroyOnLoad(base.gameObject);
-		client = new NetClient(new NetPeerConfiguration("LidgrenDemo"));
-		client.Start();
-		client.Connect(host, port);
-		SetPeer(client);
-		base.Connected += onConnected;
-		base.Disconnected += onDisconnected;
-		RegisterMessageHandler(LidgrenMessageHeaders.Hello, onHello);
-		RegisterMessageHandler(LidgrenMessageHeaders.Spawn, onSpawn);
-		RegisterMessageHandler(LidgrenMessageHeaders.Despawn, onDespawn);
-		RegisterMessageHandler(LidgrenMessageHeaders.Movement, onMovement);
-		RegisterMessageHandler(LidgrenMessageHeaders.Position, onPosition);
+		UnityEngine.Object.DontDestroyOnLoad(this);
+		UnityEngine.Object.DontDestroyOnLoad(base.gameObject);
+		this.client = new NetClient(new NetPeerConfiguration("LidgrenDemo"));
+		this.client.Start();
+		this.client.Connect(this.host, this.port);
+		base.SetPeer(this.client);
+		base.Connected += this.onConnected;
+		base.Disconnected += this.onDisconnected;
+		base.RegisterMessageHandler(LidgrenMessageHeaders.Hello, new Action<NetIncomingMessage>(this.onHello));
+		base.RegisterMessageHandler(LidgrenMessageHeaders.Spawn, new Action<NetIncomingMessage>(this.onSpawn));
+		base.RegisterMessageHandler(LidgrenMessageHeaders.Despawn, new Action<NetIncomingMessage>(this.onDespawn));
+		base.RegisterMessageHandler(LidgrenMessageHeaders.Movement, new Action<NetIncomingMessage>(this.onMovement));
+		base.RegisterMessageHandler(LidgrenMessageHeaders.Position, new Action<NetIncomingMessage>(this.onPosition));
 	}
 
 	private void onConnected(NetIncomingMessage msg)
@@ -47,10 +40,10 @@ public class LidgrenClient : LidgrenPeer
 	{
 		Debug.Log("onMovement");
 		int key = msg.ReadInt32();
-		LidgrenGameObject value = null;
-		if (lgos.TryGetValue(key, out value))
+		LidgrenGameObject lidgrenGameObject = null;
+		if (this.lgos.TryGetValue(key, out lidgrenGameObject))
 		{
-			value.GetComponent<PlayerAnimator>().OnPlayerMovement(msg.ReadByte());
+			lidgrenGameObject.GetComponent<PlayerAnimator>().OnPlayerMovement(msg.ReadByte());
 		}
 	}
 
@@ -58,20 +51,20 @@ public class LidgrenClient : LidgrenPeer
 	{
 		Debug.Log("onPosition");
 		int key = msg.ReadInt32();
-		LidgrenGameObject value = null;
-		if (lgos.TryGetValue(key, out value))
+		LidgrenGameObject lidgrenGameObject = null;
+		if (this.lgos.TryGetValue(key, out lidgrenGameObject))
 		{
 			Vector3 position = new Vector3(msg.ReadFloat(), msg.ReadFloat(), msg.ReadFloat());
-			value.transform.position = position;
+			lidgrenGameObject.transform.position = position;
 			Quaternion rotation = new Quaternion(msg.ReadFloat(), msg.ReadFloat(), msg.ReadFloat(), msg.ReadFloat());
-			value.transform.GetChild(0).rotation = rotation;
+			lidgrenGameObject.transform.GetChild(0).rotation = rotation;
 		}
 	}
 
 	private void onSpawn(NetIncomingMessage msg)
 	{
 		int num = msg.ReadInt32();
-		lgos.Add(num, LidgrenGameObject.Spawn(clientId, num, msg.SenderConnection));
+		this.lgos.Add(num, LidgrenGameObject.Spawn(this.clientId, num, msg.SenderConnection));
 	}
 
 	private void onDespawn(NetIncomingMessage msg)
@@ -79,8 +72,8 @@ public class LidgrenClient : LidgrenPeer
 		try
 		{
 			int key = msg.ReadInt32();
-			Object.Destroy(lgos[key]);
-			lgos.Remove(key);
+			UnityEngine.Object.Destroy(this.lgos[key]);
+			this.lgos.Remove(key);
 		}
 		catch
 		{
@@ -89,9 +82,21 @@ public class LidgrenClient : LidgrenPeer
 
 	private void onHello(NetIncomingMessage msg)
 	{
-		clientId = msg.ReadInt32();
+		this.clientId = msg.ReadInt32();
 		NetOutgoingMessage netOutgoingMessage = msg.SenderConnection.Peer.CreateMessage();
 		netOutgoingMessage.Write(LidgrenMessageHeaders.RequestSpawn);
 		msg.SenderConnection.SendMessage(netOutgoingMessage, NetDeliveryMethod.ReliableOrdered, 1);
 	}
+
+	private int clientId;
+
+	private NetClient client;
+
+	private Dictionary<int, LidgrenGameObject> lgos = new Dictionary<int, LidgrenGameObject>();
+
+	[SerializeField]
+	private int port = 10000;
+
+	[SerializeField]
+	private string host = "127.0.0.1";
 }

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -39,9 +39,7 @@ public class CFX2_Demo : MonoBehaviour
 	private GameObject spawnParticle()
 	{
 		GameObject gameObject = (GameObject)Object.Instantiate(ParticleExamples[exampleIndex]);
-		Transform transform = gameObject.transform;
-		Vector3 position = gameObject.transform.position;
-		transform.position = new Vector3(0f, position.y, 0f);
+		gameObject.transform.position = new Vector3(0f, gameObject.transform.position.y, 0f);
 		gameObject.SetActive(true);
 		for (int i = 0; i < gameObject.transform.childCount; i++)
 		{
@@ -110,11 +108,7 @@ public class CFX2_Demo : MonoBehaviour
 			GameObject particles = spawnParticle();
 			if (orderedSpawns)
 			{
-				Transform transform = particles.transform;
-				Vector3 position = base.transform.position;
-				float x = order;
-				Vector3 position2 = particles.transform.position;
-				transform.position = position + new Vector3(x, position2.y, 0f);
+				particles.transform.position = base.transform.position + new Vector3(order, particles.transform.position.y, 0f);
 				order -= step;
 				if (order < 0f - range)
 				{
@@ -123,10 +117,7 @@ public class CFX2_Demo : MonoBehaviour
 			}
 			else
 			{
-				Transform transform2 = particles.transform;
-				Vector3 a = base.transform.position + new Vector3(Random.Range(0f - range, range), 0f, Random.Range(0f - range, range));
-				Vector3 position3 = particles.transform.position;
-				transform2.position = a + new Vector3(0f, position3.y, 0f);
+				particles.transform.position = base.transform.position + new Vector3(Random.Range(0f - range, range), 0f, Random.Range(0f - range, range)) + new Vector3(0f, particles.transform.position.y, 0f);
 			}
 			yield return new WaitForSeconds(float.Parse(randomSpawnsDelay));
 		}

@@ -1,7 +1,12 @@
+﻿using System;
 using UnityEngine;
 
 public class DummyScript : MonoBehaviour
 {
+	public DummyScript()
+	{
+	}
+
 	private void Update()
 	{
 		if (Input.GetKeyDown(KeyCode.T))

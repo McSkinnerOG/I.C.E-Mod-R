@@ -1,7 +1,27 @@
+﻿using System;
 using UnityEngine;
 
 public struct DatabaseItem
 {
+	public DatabaseItem(int a_type, float a_x = 0f, float a_y = 0f, int a_amount = 1, bool a_hidden = false, int a_cid = 0, int a_iid = 0)
+	{
+		this.type = a_type;
+		this.amount = a_amount;
+		this.hidden = a_hidden;
+		this.iid = a_iid;
+		this.x = a_x;
+		this.y = a_y;
+		this.cid = a_cid;
+		this.dropTime = Time.time;
+		this.dropPlayerId = 0;
+		this.flag = eDbAction.none;
+	}
+
+	public Vector3 GetPos()
+	{
+		return new Vector3(this.x, 0f, this.y);
+	}
+
 	public int iid;
 
 	public int cid;
@@ -21,23 +41,4 @@ public struct DatabaseItem
 	public float dropTime;
 
 	public int dropPlayerId;
-
-	public DatabaseItem(int a_type, float a_x = 0f, float a_y = 0f, int a_amount = 1, bool a_hidden = false, int a_cid = 0, int a_iid = 0)
-	{
-		type = a_type;
-		amount = a_amount;
-		hidden = a_hidden;
-		iid = a_iid;
-		x = a_x;
-		y = a_y;
-		cid = a_cid;
-		dropTime = Time.time;
-		dropPlayerId = 0;
-		flag = eDbAction.none;
-	}
-
-	public Vector3 GetPos()
-	{
-		return new Vector3(x, 0f, y);
-	}
 }

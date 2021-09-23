@@ -1,13 +1,46 @@
+﻿using System;
 using UnityEngine;
 
 public class CharAnim2 : MonoBehaviour
 {
-	public enum ePose
+	public CharAnim2()
 	{
-		eStand,
-		eAttack,
-		eDead,
-		eSit
+	}
+
+	private void Start()
+	{
+		this.m_lastPos = base.transform.position;
+		base.animation[this.m_attackAni].speed = this.m_attackAniSpeed;
+		base.animation[this.m_dieAni].speed = this.m_dieAniSpeed;
+		base.animation[this.m_runAni].speed = this.m_runAniSpeed;
+		base.animation[this.m_sitAni].speed = this.m_sitAniSpeed;
+		base.animation[this.m_idleAni].speed = this.m_idleAniSpeed;
+	}
+
+	private void FixedUpdate()
+	{
+		this.m_isMoving = ((base.transform.position - this.m_lastPos).sqrMagnitude > 0.0002f);
+		this.m_lastPos = base.transform.position;
+	}
+
+	public void PlayAnimation(CharAnim2.ePose a_anim)
+	{
+		if (null != base.animation)
+		{
+			switch (a_anim)
+			{
+			case CharAnim2.ePose.eAttack:
+				base.animation.CrossFade(this.m_attackAni, this.m_fadeDur);
+				return;
+			case CharAnim2.ePose.eDead:
+				base.animation.CrossFade(this.m_dieAni, this.m_fadeDur);
+				return;
+			case CharAnim2.ePose.eSit:
+				base.animation.CrossFade(this.m_sitAni, this.m_fadeDur);
+				return;
+			}
+			base.animation.CrossFade((!this.m_isMoving) ? this.m_idleAni : this.m_runAni, this.m_fadeDur);
+		}
 	}
 
 	public float m_fadeDur = 0.3f;
@@ -36,41 +69,11 @@ public class CharAnim2 : MonoBehaviour
 
 	private bool m_isMoving;
 
-	private void Start()
+	public enum ePose
 	{
-		m_lastPos = base.transform.position;
-		base.animation[m_attackAni].speed = m_attackAniSpeed;
-		base.animation[m_dieAni].speed = m_dieAniSpeed;
-		base.animation[m_runAni].speed = m_runAniSpeed;
-		base.animation[m_sitAni].speed = m_sitAniSpeed;
-		base.animation[m_idleAni].speed = m_idleAniSpeed;
-	}
-
-	private void FixedUpdate()
-	{
-		m_isMoving = ((base.transform.position - m_lastPos).sqrMagnitude > 0.0002f);
-		m_lastPos = base.transform.position;
-	}
-
-	public void PlayAnimation(ePose a_anim)
-	{
-		if (null != base.animation)
-		{
-			switch (a_anim)
-			{
-			case ePose.eAttack:
-				base.animation.CrossFade(m_attackAni, m_fadeDur);
-				break;
-			case ePose.eDead:
-				base.animation.CrossFade(m_dieAni, m_fadeDur);
-				break;
-			case ePose.eSit:
-				base.animation.CrossFade(m_sitAni, m_fadeDur);
-				break;
-			default:
-				base.animation.CrossFade((!m_isMoving) ? m_idleAni : m_runAni, m_fadeDur);
-				break;
-			}
-		}
+		eStand,
+		eAttack,
+		eDead,
+		eSit
 	}
 }
