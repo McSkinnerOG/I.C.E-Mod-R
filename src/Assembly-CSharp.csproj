@@ -181,14 +181,14 @@
     <Compile Include="JobBase.cs" />
     <Compile Include="JobPet.cs" />
     <Compile Include="JobStalker.cs" />
-    <Compile Include="JSON.cs" />
-    <Compile Include="JSONArray.cs" />
-    <Compile Include="JSONBinaryTag.cs" />
-    <Compile Include="JSONClass.cs" />
-    <Compile Include="JSONData.cs" />
-    <Compile Include="JsonItems.cs" />
-    <Compile Include="JSONLazyCreator.cs" />
-    <Compile Include="JSONNode.cs" />
+    <Compile Include="SimpleJSON\JSON.cs" />
+    <Compile Include="SimpleJSON\JSONArray.cs" />
+    <Compile Include="SimpleJSON\JSONBinaryTag.cs" />
+    <Compile Include="SimpleJSON\JSONClass.cs" />
+    <Compile Include="SimpleJSON\JSONData.cs" />
+    <Compile Include="SimpleJSON\JsonItems.cs" />
+    <Compile Include="SimpleJSON\JSONLazyCreator.cs" />
+    <Compile Include="SimpleJSON\JSONNode.cs" />
     <Compile Include="KillXp.cs" />
     <Compile Include="LanguageSetter.cs" />
     <Compile Include="LidClient.cs" />
@@ -287,5 +287,6 @@
     <Compile Include="WorldGenerator.cs" />
     <Compile Include="WorldGenerator2x2.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
